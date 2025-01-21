@@ -11,7 +11,15 @@ class edge:
         self.n2 = _n2
         self.id = _id
         self.length = _length
+
+class ResultSet1:
+    
+    def __init__(self):
+        self.res = {}
         
+    def callback(self, node: str, dist: int):
+        self[node] = dist
+    
 # Does a bfs, starting from starting node, and calls callback on each visited node
 def bfs(starting: str, edges: dict[str, list[edge]], callback: Callable[[str, int]]):
     visited = {}

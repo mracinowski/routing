@@ -44,6 +44,11 @@ def refreshData():
 def saveData():
     pass
 
+
+def ensureExistingNode(node: str):
+    if (node not in data.externalNodes) and (node not in data.internalNodes):
+        raise HTTPException(400, "Invalid node ID")
+
 @app.get("/getStatus")
 def getStatus():
     """
@@ -58,6 +63,8 @@ def getPassthroughData(lastId: str):
     Get the data about passthrough through the datacenter in control
     If the state didn't change since last request, based on the provided id,
     It doesn't send the data, and returns appropriate message
+    This will be calculated once per data update, 
+    and will use preprocessed data to answer this query. 
     """
     res = {}
     
@@ -78,14 +85,20 @@ def getInternalConnection(internalNode1: str, internalNode2: str):
     """
     Returns distance and exact path between between two internal nodes
     """
+    ensureExistingNode(internalNode1)
+    ensureExistingNode(internalNode2)
 
 @app.get("/getDistancesMatrix/{internalNode1}")
 def getDistancesMatrix(internalNode1: str):
     """
     Returns distance from the internal node to all external connections.
-    This will be calculated once per data update, 
-    and will use preprocessed data to answer this query. 
     """
+    ensureExistingNode(internalNode1)
+    
+    res = graph.ResultSet1()
+    graph.bfs(internalNode1, data.edges, res.callback)
+    
+    return res
 
 # Do we need any locks in this code? 
 # TBF, I don't remember how python handles parallel code ~SC
@@ -101,9 +114,7 @@ def addEdge(v1: str, v2: str, distance: int):
     
     # Data checks
     for i in [v1, v2]:
-        if i not in data.internalNodes and i not in data.externalNodes:
-            raise HTTPException(400, "Invalid node id")
-        
+        ensureExistingNode(i)
     
     edgeUUID = uuid.uuid4()
     if data.edges[v1] is None:
