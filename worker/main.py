@@ -1,5 +1,5 @@
 from fastapi import FastAPI, HTTPException
-from common import fileOperations
+from common import fileOperations, graph
 import uuid
 
 app = FastAPI()
@@ -27,7 +27,7 @@ class localData:
     externalNodes = []
     
     # List of all edges
-    edges: dict[str, list[str, str]] = {}
+    edges: dict[str, list[graph.edge]] = {}
     
     
 data = localData()
@@ -109,8 +109,8 @@ def addEdge(v1: str, v2: str, distance: int):
     if data.edges[v1] is None:
         data.edges[v1] = []
     
-    data.edges[v1].insert([v2 ,edgeUUID])
-    data.edges[v2].insert([v1 ,edgeUUID])
+    data.edges[v1].insert(graph.edge(v1, v2, edgeUUID, distance))
+    data.edges[v2].insert(graph.edge(v2, v1, edgeUUID, distance))
     
     # TODO: Update preprocessed data
     
