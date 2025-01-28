@@ -3,8 +3,11 @@ kind: Service
 metadata:
   name: manager
 spec:
+  type: ClusterIP
   selector:
     app: manager
   ports:
-  - protocol: TCP
-    port: 8000
+  - port: 8000
+    protocol: TCP
+    targetPort: 8000
+    name: http 
