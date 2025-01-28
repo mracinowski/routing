@@ -17,22 +17,22 @@ datacenterId = 0
 isAuthoritative = True
 
 class localData:
-    # Lock of the current state of the data
-    dataLock = ""
-    
-    # Preprocessed data for passthrough
-    passthroughMatrix = []
-    
-    # List of internal nodes
-    internalNodes = []
-    
-    # List of external node
-    externalNodes = []
-    
-    # List of all edges
-    edges: dict[str, list[graph.edge]] = {}
-    
-    
+	# Lock of the current state of the data
+	dataLock = ""
+	
+	# Preprocessed data for passthrough
+	passthroughMatrix = []
+	
+	# List of internal nodes
+	internalNodes = []
+	
+	# List of external node
+	externalNodes = []
+	
+	# List of all edges
+	edges: dict[str, list[graph.edge]] = {}
+	
+	
 data = localData()
 
 
@@ -59,7 +59,13 @@ def ensureExistingNode(node: str):
 		raise HTTPException(400, "Invalid node ID")
 
 def processPassthroughData():
-	pass
+	data.passthroughMatrix = []
+	for node in data.externalNodes:
+		resultSet = graph.ResultSet1()
+		graph.bfs(node, data.edges, resultSet.callback)
+		data.passthroughMatrix[node] = []
+		for node2 in data.externalNodes:
+			data.passthroughMatrix.append(resultSet.res[node2])
 
 @app.get("/getStatus")
 def getStatus():
@@ -89,7 +95,7 @@ def getPassthroughData(lastId: str):
 	res['data'] = {}
 	res['data']['matrix'] = data.passthroughMatrix
 	# List of nodes in the same order as in the matrix
-	res['data']['nodes'] = [] 
+	res['data']['nodes'] = data.externalNodes 
 	return res
 
 @app.get("/getInternalConnection/{internalNode1}/{internalNode2}")
