@@ -58,6 +58,9 @@ def ensureExistingNode(node: str):
 	if (node not in data.externalNodes) and (node not in data.internalNodes):
 		raise HTTPException(400, "Invalid node ID")
 
+def processPassthroughData():
+	pass
+
 @app.get("/getStatus")
 def getStatus():
 	"""
@@ -132,7 +135,7 @@ def addEdge(v1: str, v2: str, distance: int):
 	data.edges[v1].insert(graph.edge(v1, v2, edgeUUID, distance))
 	data.edges[v2].insert(graph.edge(v2, v1, edgeUUID, distance))
 	
-	# TODO: Update preprocessed data
+	processPassthroughData()
 	
 	return {'status':'Ok'}
 	
@@ -165,12 +168,15 @@ def setNodeStatus(id: str, status: str):
 		return {'status': 'Ok', 'message': 'No data was changed'}
 	
 	if (newType == False and id in data.externalNodes):
-		pass #TODO: Update preprocessed data
+		data.externalNodes.remove(id)
+		data.internalNodes.insert(id)
 	elif (newType == True and id in data.internalNodes):
-		pass #TODO: Update preprocessed data
+		data.internalNodes.remove(id)
+		data.externalNodes.insert(id)
 	else:
 		raise HTTPException(400, "Invalid node ID")
-	
+
+	processPassthroughData()
 	return {'status': 'Ok'}
 
 
