@@ -19,4 +19,4 @@ spec:
         name: manager
         ports:
         - containerPort: 8000
-        args: ["main:app"]
+        args: ["manager:app"]
