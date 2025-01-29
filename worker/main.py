@@ -1,6 +1,9 @@
 import os
 from common import fileOperations, graph
 from fastapi import FastAPI, HTTPException
+from json import JSONEncoder
+from types import SimpleNamespace
+import json
 from worker.manager import Manager
 import httpx
 import asyncio
@@ -16,7 +19,7 @@ datacenterId = 0
 # There can be only one worker with authority over each datacenter
 isAuthoritative = True
 
-class localData:
+class localData(JSONEncoder):
 	# Lock of the current state of the data
 	dataLock = ""
 	
@@ -34,6 +37,7 @@ class localData:
 	
 	
 data = localData()
+dataFile = "/some/path"
 
 
 @app.on_event("startup")
@@ -46,12 +50,20 @@ async def startup():
 def refreshData():
 	if not fileOperations.checkLock("path/To/Lock", data.dataLock):
 		return
-	# Load new data into memory
+	textData = fileOperations.readFile(dataFile)
+	global data
+	jsonData = json.loads(textData, object_hook=lambda d: SimpleNamespace(**d))
+	data.dataLock = jsonData.dataLock
+	data.passthroughMatrix = jsonData.passthroughMatrix
+	data.internalNodes = jsonData.internalNodes
+	data.externalNodes = jsonData.externalNodes
+	data.edges = jsonData.edges
 
 
 # Save the current state of data to the drive
 def saveData():
-	pass
+	textData = localData.encode(data)
+	fileOperations.saveFile(dataFile, textData)
 
 
 def ensureExistingNode(node: str):
