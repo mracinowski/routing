@@ -18,9 +18,10 @@ class ResultSet1:
         self.res = {}
         
     def callback(self, node: str, dist: int, _from: str):
-        if node in self.res and self.res[node] <= dist:
+        if (node in self.res) and self.res[node] <= dist:
             return False
         self.res[node] = dist
+        return True
 
 
 class PathResult:
@@ -29,12 +30,16 @@ class PathResult:
         self.paths = {}
         self.source = source
         self.target = target
-        self.dist = 0
+        self.dist = None
 
     def callback(self, node: str, dist: int, from_: str):
+        print(f'{node=}, {dist=}, {from_=}')
         self.paths[node] = from_
         if self.target == node:
+            if self.dist is not None and self.dist < dist:
+                return False
             self.dist = dist
+        return True
 
     def compute(self):
         res = []
