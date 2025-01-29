@@ -1,19 +1,26 @@
 from fastapi import FastAPI, Request
 from pydantic import BaseModel
 import logging
-
-class Registration(BaseModel):
-    callback: str
+import os
+from manager.service import Service
+from models import Registration
 
 app = FastAPI()
-logger = logging.getLogger("uvicorn")
+log = logging.getLogger("uvicorn")
+
+service = Service()
+
+@app.on_event("startup")
+async def startup():
+	service.connect(
+		os.environ['REDIS_SERVICE_HOST'],
+		os.environ['REDIS_SERVICE_PORT']
+	)
 
 @app.get("/")
 async def hello():
 	return "Hello world!"
 
-@app.post("/register")
-async def register(registration: Registration):
-	logger.info("Register {}".format(registration.callback))
-	return None
-
+@app.post("/lease")
+async def lease(registration: Registration):
+	return service.lease(registration)
