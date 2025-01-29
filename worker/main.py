@@ -105,6 +105,15 @@ def getInternalConnection(internalNode1: str, internalNode2: str):
 	"""
 	ensureExistingNode(internalNode1)
 	ensureExistingNode(internalNode2)
+	
+	graphPath = graph.PathResult(internalNode1, internalNode2)
+	graph.bfs(internalNode1, data.edges, graphPath.callback)
+
+	res = {}
+	res['distance'] = graphPath.dist
+	res['path'] = graphPath.compute()
+ 
+	return res
 
 @app.get("/getDistancesMatrix/{internalNode1}")
 def getDistancesMatrix(internalNode1: str):
@@ -113,9 +122,12 @@ def getDistancesMatrix(internalNode1: str):
 	"""
 	ensureExistingNode(internalNode1)
 	
-	res = graph.ResultSet1()
-	graph.bfs(internalNode1, data.edges, res.callback)
+	graphRes = graph.ResultSet1()
+	graph.bfs(internalNode1, data.edges, graphRes.callback)
 	
+	res = {}
+	res['data'] = graphRes.res
+
 	return res
 
 # Do we need any locks in this code? 
@@ -152,6 +164,15 @@ def deleteEdge(id: str):
 	"""
 	if isAuthoritative == False:
 		raise HTTPException(403, "This node cannot edit data")
+
+	for key in data.edges.keys():
+		for element in data.edges[key]:
+			if element.id == id:
+				data.edges[key].remove(element)
+
+	processPassthroughData()
+	
+	return {'status':'Ok'}
 
 @app.post("/setNodeStatus/{id}/{status}/")
 def setNodeStatus(id: str, status: str):
