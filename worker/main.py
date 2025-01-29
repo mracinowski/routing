@@ -4,14 +4,21 @@ from fastapi import FastAPI, HTTPException
 from json import JSONEncoder
 from types import SimpleNamespace
 import json
-from worker.manager import Manager
+from worker.shard import Shard
 import httpx
 import asyncio
 import uuid
+import logging
 
-manager = Manager()
+shard = Shard(
+	os.environ["POD_HOST"],
+	os.environ["POD_PORT"],
+	os.environ["MANAGER_SERVICE_HOST"],
+	os.environ["MANAGER_SERVICE_PORT"],
+)
 
 app = FastAPI()
+log = logging.getLogger("uvicorn")
 
 # ID if of the datacenter this worker works on
 datacenterId = 0
@@ -39,11 +46,10 @@ class localData(JSONEncoder):
 data = localData()
 dataFile = "/some/path"
 
-
 @app.on_event("startup")
-async def startup():
-	manager.setup(os.environ)
-	await manager.register()
+async def lease():
+	await shard.lease()
+
 
 # For non-authoritative, check if there is new data stored about the region
 # If there is update, refresh in memory data
@@ -51,7 +57,6 @@ def refreshData():
 	if not fileOperations.checkLock("path/To/Lock", data.dataLock):
 		return
 	textData = fileOperations.readFile(dataFile)
-	global data
 	jsonData = json.loads(textData, object_hook=lambda d: SimpleNamespace(**d))
 	data.dataLock = jsonData.dataLock
 	data.passthroughMatrix = jsonData.passthroughMatrix
