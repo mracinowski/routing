@@ -24,10 +24,10 @@ class MainData:
     # Map each edge id to it's datacenter. -1 if external
     edgesToDC = {}
     
-    externalEdges: dict[str, list[graph.edge]] = {}
+    externalEdges: dict[str, list[graph.Edge]] = {}
     
     # Maps each datacenter into it's passthrough connections
-    internalPassthrough: dict[str, dict[str, list[graph.edge]]] = {}
+    internalPassthrough: dict[str, dict[str, list[graph.Edge]]] = {}
     
 data = MainData()
     
@@ -47,6 +47,9 @@ def ensureExistingNode(node):
     if node not in data.serverToDcMapping.keys():
         raise HTTPException(400, "Invalid node ID")
 
+def ensureFreshWorkerData():
+    pass
+
 @app.get("/getRoute/{start}/{end}")
 def getRoute(start: str, end: str):
     """
@@ -62,6 +65,17 @@ def getRoute(start: str, end: str):
     # 6. Construct answer from the pieces
     return "Hello world!"
 
+def prepareAllEdges(edgeConnection1: dict[str, int], edgeConnection2: dict[str, int], point1, point2):
+    allEdges: dict[str, list[graph.Edge]]
+    allEdges = data.internalPassthrough.copy()
+    allEdges[point1] = []
+    for edge in edgeConnection1.keys():
+        allEdges[point1].append(graph.Edge(point1, edge, uuid.uuid4(), edgeConnection1[edge]))
+    for edge in edgeConnection2.keys():
+        allEdges[edge].append(graph.Edge(edge, point2, uuid.uuid4(), edgeConnection2[edge]))
+    
+    return allEdges
+
 @app.get("/getDistance/{start}/{end}")
 def getDistance(start: str, end: str):
     """
@@ -74,6 +88,8 @@ def getDistance(start: str, end: str):
     startingPoints = passToWorkers(data.serverToDcMapping[start])['data']
     endingPoints = passToWorkers(data.serverToDcMapping[start])['data']
     # 3. Find the data centers through the fastest path goes through
+    ensureFreshWorkerData()
+    edges = prepareAllEdges(startingPoints, endingPoints, start, end)
     # 4. Ask getInternalConnection for each segment
     # 5. If it's internal connection, ask also for getInternalConnection between start and end
     # 6. Construct answer from the pieces
@@ -104,8 +120,8 @@ def addEdge(v1: str, v2: str, distance: int):
             passToWorkers(data.edgesToDC[i], f'/setNodeStatus/{i}/external/')
             
 	
-        data.externalEdges[v1].insert(graph.edge(v1, v2, edgeUUID, distance))
-        data.externalEdges[v2].insert(graph.edge(v2, v1, edgeUUID, distance))
+        data.externalEdges[v1].insert(graph.Edge(v1, v2, edgeUUID, distance))
+        data.externalEdges[v2].insert(graph.Edge(v2, v1, edgeUUID, distance))
         data.edgesToDC[edgeUUID] = -1
         res['id'] = edgeUUID
     else:
