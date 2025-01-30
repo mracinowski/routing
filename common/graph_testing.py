@@ -50,6 +50,8 @@ class BFSTestCase(unittest.TestCase):
 		graph.bfs('v1', edges, result_path.callback)
 		expected_result = 3
 		self.assertEqual(expected_result, result_path.dist)
+		expected_path = ['v3', 'v2', 'v1']
+		self.assertEqual(expected_path, result_path.compute())
 
 	def test2_resultpath(self):
 		edges: dict[str, list[graph.edge]] = {}
@@ -66,6 +68,8 @@ class BFSTestCase(unittest.TestCase):
 		graph.bfs('v1', edges, result_path.callback)
 		expected_result = 1
 		self.assertEqual(expected_result, result_path.dist)
+		expected_path = ['v3', 'v1']
+		self.assertEqual(expected_path, result_path.compute())
 
 
 if __name__ == '__main__':
