@@ -1,6 +1,7 @@
 from collections.abc import Callable
+from queue import PriorityQueue
 
-class edge:
+class Edge:
     n1: str
     n2: str
     id: str
@@ -41,14 +42,14 @@ class PathResult:
             res.append(self.paths[res[len(res) - 1]])
         return res
 
-# Does a bfs, starting from starting node, and calls callback on each visited node
-def bfs(starting: str, edges: dict[str, list[edge]], callback: Callable[[str, int, str], bool]):
+# Does a Dijkstra algorithm, starting from starting node, and calls callback on each visited node
+def dijkstra(starting: str, edges: dict[str, list[Edge]], callback: Callable[[str, int, str], bool]):
     visited = {}
-    queue: list[tuple[int, str, str]] = [(0, starting, "")]
+    queue: PriorityQueue[tuple[int, str, str]] = PriorityQueue()
+    queue.put((0, starting, ""))
     visited[starting] = 0
-    while len(queue) > 0:
-        queue.sort()
-        (dist, element, from_) = queue.pop(0)
+    while queue.qsize() > 0:
+        (dist, element, from_) = queue.get()
         if visited[element] < dist:
             continue
         callback(element, dist, from_)
@@ -57,4 +58,4 @@ def bfs(starting: str, edges: dict[str, list[edge]], callback: Callable[[str, in
                 continue
             
             visited[edge.n2] = dist + edge.length
-            queue.append((dist + edge.length, edge.n2, element))
+            queue.put((dist + edge.length, edge.n2, element))
