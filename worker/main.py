@@ -33,7 +33,7 @@ class localData(JSONEncoder):
 	externalNodes = []
 	
 	# List of all edges
-	edges: dict[str, list[graph.edge]] = {}
+	edges: dict[str, list[graph.Edge]] = {}
 	
 	
 data = localData()
@@ -45,7 +45,7 @@ async def startup():
 	manager.setup(os.environ)
 	await manager.register()
 
-# For non authoritative, check if there is new data stored about the region
+# For non-authoritative, check if there is new data stored about the region
 # If there is update, refresh in memory data
 def refreshData():
 	if not fileOperations.checkLock("path/To/Lock", data.dataLock):
@@ -162,8 +162,8 @@ def addEdge(v1: str, v2: str, distance: int):
 	if data.edges[v1] is None:
 		data.edges[v1] = []
 	
-	data.edges[v1].insert(graph.edge(v1, v2, edgeUUID, distance))
-	data.edges[v2].insert(graph.edge(v2, v1, edgeUUID, distance))
+	data.edges[v1].insert(graph.Edge(v1, v2, edgeUUID, distance))
+	data.edges[v2].insert(graph.Edge(v2, v1, edgeUUID, distance))
 	
 	processPassthroughData()
 	
