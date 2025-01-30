@@ -19,6 +19,8 @@ class MainData:
     
     # Map each server id to it's datacenter
     serverToDcMapping = {}
+    # Count a number of external connections each server has
+    noExternalConnections = {}
     # Map each edge id to it's datacenter. -1 if external
     edgesToDC = {}
     
@@ -85,6 +87,11 @@ def addEdge(v1: str, v2: str, distance: int):
         for i in [v1, v2]:
             if data.externalEdges[i] is None:
                 data.externalEdges[i] = []
+            if data.noExternalConnections[i] == 0:
+                pass
+            data.noExternalConnections[i] += 1
+            passToWorkers(data.edgesToDC[i], f'/setNodeStatus/{i}/external/')
+            
 	
         data.externalEdges[v1].insert(graph.edge(v1, v2, edgeUUID, distance))
         data.externalEdges[v2].insert(graph.edge(v2, v1, edgeUUID, distance))
@@ -120,6 +127,9 @@ def deleteEdge(id: str):
         for key in data.externalEdges.keys():
             for element in data.externalEdges[key]:
                 if element.id == id:
+                    data.noExternalConnections[key] -= 1
+                    if data.noExternalConnections[key] == 0:
+                        passToWorkers(data.edgesToDC[key], f'/setNodeStatus/{key}/internal/')
                     data.externalEdges[key].remove(element)
         saveData()
     else:
