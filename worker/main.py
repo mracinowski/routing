@@ -164,15 +164,16 @@ def addEdge(v1: str, v2: str, distance: int):
 		ensureExistingNode(i)
 	
 	edgeUUID = uuid.uuid4()
-	if data.edges[v1] is None:
-		data.edges[v1] = []
+	for i in [v1, v2]:
+		if data.edges[i] is None:
+			data.edges[i] = []
 	
 	data.edges[v1].insert(graph.Edge(v1, v2, edgeUUID, distance))
 	data.edges[v2].insert(graph.Edge(v2, v1, edgeUUID, distance))
 	
 	processPassthroughData()
 	
-	return {'status':'Ok'}
+	return {'status':'Ok', 'id': edgeUUID}
 	
 @app.delete("/deleteEdge/{id}/")
 def deleteEdge(id: str):
