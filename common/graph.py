@@ -42,8 +42,8 @@ class PathResult:
             res.append(self.paths[res[len(res) - 1]])
         return res
 
-# Does a bfs, starting from starting node, and calls callback on each visited node
-def bfs(starting: str, edges: dict[str, list[Edge]], callback: Callable[[str, int, str], bool]):
+# Does a Dijkstra algorithm, starting from starting node, and calls callback on each visited node
+def dijkstra(starting: str, edges: dict[str, list[Edge]], callback: Callable[[str, int, str], bool]):
     visited = {}
     queue: PriorityQueue[tuple[int, str, str]] = PriorityQueue()
     queue.put((0, starting, ""))

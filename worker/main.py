@@ -74,7 +74,7 @@ def processPassthroughData():
 	data.passthroughMatrix = []
 	for node in data.externalNodes:
 		resultSet = graph.ResultSet1()
-		graph.bfs(node, data.edges, resultSet.callback)
+		graph.dijkstra(node, data.edges, resultSet.callback)
 		data.passthroughMatrix[node] = []
 		for node2 in data.externalNodes:
 			data.passthroughMatrix.append(resultSet.res[node2])
@@ -119,7 +119,7 @@ def getInternalConnection(internalNode1: str, internalNode2: str):
 	ensureExistingNode(internalNode2)
 	
 	graphPath = graph.PathResult(internalNode1, internalNode2)
-	graph.bfs(internalNode1, data.edges, graphPath.callback)
+	graph.dijkstra(internalNode1, data.edges, graphPath.callback)
 
 	res = {}
 	res['distance'] = graphPath.dist
@@ -135,7 +135,7 @@ def getDistancesMatrix(internalNode1: str):
 	ensureExistingNode(internalNode1)
 	
 	graphRes = graph.ResultSet1()
-	graph.bfs(internalNode1, data.edges, graphRes.callback)
+	graph.dijkstra(internalNode1, data.edges, graphRes.callback)
 	
 	res = {}
 	res['data'] = graphRes.res

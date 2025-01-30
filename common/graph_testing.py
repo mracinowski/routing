@@ -15,7 +15,7 @@ class BFSTestCase(unittest.TestCase):
 		edges['v2'] = [edge1_2, edge3]
 		edges['v3'] = [edge2_2, edge3_2]
 		result_set = graph.ResultSet1()
-		graph.bfs('v1', edges, result_set.callback)
+		graph.dijkstra('v1', edges, result_set.callback)
 		expected_result = {'v1': 0, 'v2': 2, 'v3': 3}
 		self.assertEqual(expected_result, result_set.res)
 
@@ -31,7 +31,7 @@ class BFSTestCase(unittest.TestCase):
 		edges['v2'] = [edge1_2, edge3]
 		edges['v3'] = [edge2_2, edge3_2]
 		result_set = graph.ResultSet1()
-		graph.bfs('v1', edges, result_set.callback)
+		graph.dijkstra('v1', edges, result_set.callback)
 		expected_result = {'v1': 0, 'v2': 2, 'v3': 1}
 		self.assertEqual(expected_result, result_set.res)
 
@@ -47,7 +47,7 @@ class BFSTestCase(unittest.TestCase):
 		edges['v2'] = [edge1_2, edge3]
 		edges['v3'] = [edge2_2, edge3_2]
 		result_path = graph.PathResult('v1', 'v3')
-		graph.bfs('v1', edges, result_path.callback)
+		graph.dijkstra('v1', edges, result_path.callback)
 		expected_result = 3
 		self.assertEqual(expected_result, result_path.dist)
 		expected_path = ['v3', 'v2', 'v1']
@@ -65,7 +65,7 @@ class BFSTestCase(unittest.TestCase):
 		edges['v2'] = [edge1_2, edge3]
 		edges['v3'] = [edge2_2, edge3_2]
 		result_path = graph.PathResult('v1', 'v3')
-		graph.bfs('v1', edges, result_path.callback)
+		graph.dijkstra('v1', edges, result_path.callback)
 		expected_result = 1
 		self.assertEqual(expected_result, result_path.dist)
 		expected_path = ['v3', 'v1']
