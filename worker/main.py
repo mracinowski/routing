@@ -90,7 +90,7 @@ def getStatus():
 	Get some kind of id of the current state of the network
 	We don't want to send the internal data, if it hasn't changed
 	"""
-	return data.dataLock
+	return {'status' : 'Ok', 'data' : data.dataLock}
 
 @app.get("/getPassthroughData/{lastId}")
 def getPassthroughData(lastId: str):
@@ -101,7 +101,7 @@ def getPassthroughData(lastId: str):
 	This will be calculated once per data update, 
 	and will use preprocessed data to answer this query. 
 	"""
-	res = {}
+	res = {'status': 'Ok'}
 	
 	if lastId == getStatus():
 		res['hasData'] = False
@@ -126,7 +126,7 @@ def getInternalConnection(internalNode1: str, internalNode2: str):
 	graphPath = graph.PathResult(internalNode1, internalNode2)
 	graph.dijkstra(internalNode1, data.edges, graphPath.callback)
 
-	res = {}
+	res = {'status': 'Ok'}
 	res['distance'] = graphPath.dist
 	res['path'] = graphPath.compute()
  
@@ -142,7 +142,7 @@ def getDistancesMatrix(internalNode1: str):
 	graphRes = graph.ResultSet1()
 	graph.dijkstra(internalNode1, data.edges, graphRes.callback)
 	
-	res = {}
+	res = {'status': 'Ok'}
 	res['data'] = graphRes.res
 
 	return res

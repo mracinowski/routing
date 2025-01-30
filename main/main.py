@@ -38,8 +38,14 @@ def saveData():
     pass
 
 def passToWorkers(dcId, endpoint) -> dict:
-    pass
+    data = {}
+    if data['res'] != 'Ok':
+        raise HTTPException(500, "Internal communication error")
+    return data
 
+def ensureExistingNode(node):
+    if node not in data.serverToDcMapping.keys():
+        raise HTTPException(400, "Invalid node ID")
 
 @app.get("/getRoute/{start}/{end}")
 def getRoute(start: str, end: str):
@@ -47,6 +53,8 @@ def getRoute(start: str, end: str):
     Get the shortest path between two nodes
     """
     # 1. Check correctness of the input
+    for i in [start, end]:
+        ensureExistingNode(i)
     # 2. Ask getDistancesMatrix for start and end nodes
     # 3. Find the data centers through the fastest path goes through
     # 4. Ask getInternalConnection for each segment
@@ -60,7 +68,11 @@ def getDistance(start: str, end: str):
     Get the shortest distance between two nodes
     """
     # 1. Check correctness of the input
+    for i in [start, end]:
+        ensureExistingNode(i)
     # 2. Ask getDistancesMatrix for start and end nodes
+    startingPoints = passToWorkers(data.serverToDcMapping[start])['data']
+    endingPoints = passToWorkers(data.serverToDcMapping[start])['data']
     # 3. Find the data centers through the fastest path goes through
     # 4. Ask getInternalConnection for each segment
     # 5. If it's internal connection, ask also for getInternalConnection between start and end
@@ -75,8 +87,7 @@ def addEdge(v1: str, v2: str, distance: int):
     """
     res = {'status': 'Kk'}
     for i in [v1, v2]:
-        if i not in data.serverToDcMapping.keys():
-            raise HTTPException(400, "Invalid node ID")
+        ensureExistingNode(i)
         
     if data.serverToDcMapping[v1] != data.serverToDcMapping[v2]:
         if isAuthoritative == False:
