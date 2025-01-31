@@ -59,11 +59,34 @@ def getRoute(start: str, end: str):
     for i in [start, end]:
         ensureExistingNode(i)
     # 2. Ask getDistancesMatrix for start and end nodes
+    startingPoints = passToWorkers(data.serverToDcMapping[start], f'/getDistancesMatrix/{start}/')['data']
+    endingPoints = passToWorkers(data.serverToDcMapping[start], f'/getDistancesMatrix/{end}/')['data']
     # 3. Find the data centers through the fastest path goes through
-    # 4. Ask getInternalConnection for each segment
-    # 5. If it's internal connection, ask also for getInternalConnection between start and end
+    ensureFreshWorkerData()
+    edges = prepareAllEdges(startingPoints, endingPoints, start, end)
+    res = graph.PathResult(start, end)
+    graph.dijkstra(start, edges, res.callback)
+    distance = res.dist
+    path = res.compute()
+    # 4. If it's internal connection, ask also for getInternalConnection between start and end
+    if data.serverToDcMapping[start] == data.serverToDcMapping[end]:
+        internal = passToWorkers(data.serverToDcMapping[start], f'/getInternalConnection/{start}/{end}/')
+        if internal['distance'] < distance:
+            return internal
+    # 5. Ask getInternalConnection for each segment
+    fullPath = []
+    for i in range(1, len(path)):
+        if data.serverToDcMapping[path[i-1]] == data.serverToDcMapping[path[i]]:
+            part: list = passToWorkers(data.serverToDcMapping[path[i]], f'/getInternalConnection/{[path[i-1]]}/{path[i]}/')['path']
+            for element in part:
+                fullPath.append(element)
+            fullPath.pop()
+        else:
+            fullPath.append(path[i-1])
+    fullPath.append(end)
+    
     # 6. Construct answer from the pieces
-    return "Hello world!"
+    return {'status': 'Ok', 'distance': distance, 'path': fullPath}
 
 def prepareAllEdges(edgeConnection1: dict[str, int], edgeConnection2: dict[str, int], point1, point2):
     allEdges: dict[str, list[graph.Edge]]
@@ -97,7 +120,6 @@ def getDistance(start: str, end: str):
     if data.serverToDcMapping[start] == data.serverToDcMapping[end]:
         internal = passToWorkers(data.serverToDcMapping[start], f'/getInternalConnection/{start}/{end}/')['data']
         distance = min(distance, internal['distance'])
-    # 5. Construct answer from the pieces
     return {'status':'Ok', 'distance': distance}
 
 @app.put("/addEdge/{v1}/{v2}/{distance}")
