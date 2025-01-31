@@ -68,6 +68,7 @@ def refreshData():
 
 # Save the current state of data to the drive
 def saveData():
+	data.dataLock = uuid.uuid4()
 	textData = json.dumps(data)
 	fileOperations.saveFile(dataFile, textData)
 	fileOperations.saveFile(lockFile, data.dataLock)
@@ -85,7 +86,6 @@ def processPassthroughData():
 		data.passthroughMatrix[node] = []
 		for node2 in data.externalNodes:
 			data.passthroughMatrix.append(resultSet.res[node2])
-	data.dataLock = uuid.uuid4()
 	saveData()
 
 @app.get("/getStatus")
