@@ -55,7 +55,6 @@ def upload_blob(bucket_name, source_file_name, destination_blob_name):
     # If the destination object already exists in your bucket, set instead a
     # generation-match precondition using its generation number.
     generation_match_precondition = 0
-
     blob.upload_from_filename(source_file_name, if_generation_match=generation_match_precondition)
 
     print(
@@ -65,7 +64,7 @@ def upload_blob(bucket_name, source_file_name, destination_blob_name):
 def readFile(path):
     return download_blob_into_memory(bucketName, path)
 
-def saveFile(path, data):
+def saveFile(path, data: str):
     with tempfile.NamedTemporaryFile(delete_on_close=False) as fp:
-        fp.write(data)
+        fp.write(data.encode())
         upload_blob(bucketName, fp.name, path)
