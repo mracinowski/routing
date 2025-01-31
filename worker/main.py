@@ -87,7 +87,7 @@ def getStatus():
 	Get some kind of id of the current state of the network
 	We don't want to send the internal data, if it hasn't changed
 	"""
-	return {'status' : 'Ok', 'data' : data.dataLock}
+	return {'status': 'Ok', 'data': data.dataLock}
 
 @app.get("/getPassthroughData/{lastId}")
 def getPassthroughData(lastId: str):
@@ -122,12 +122,7 @@ def getInternalConnection(internalNode1: str, internalNode2: str):
 
 	graphPath = graph.PathResult(internalNode1, internalNode2)
 	graph.dijkstra(internalNode1, data.edges, graphPath.callback)
-
-	res = {'status': 'Ok'}
-	res['distance'] = graphPath.dist
-	res['path'] = graphPath.compute()
-
-	return res
+	return {'status': 'Ok', 'distance': graphPath.dist, 'path': graphPath.compute()}
 
 @app.get("/getDistancesMatrix/{internalNode1}")
 def getDistancesMatrix(internalNode1: str):
@@ -139,9 +134,7 @@ def getDistancesMatrix(internalNode1: str):
 	graphRes = graph.ResultSet1()
 	graph.dijkstra(internalNode1, data.edges, graphRes.callback)
 
-	res = {'status': 'Ok', 'data': graphRes.res}
-
-	return res
+	return {'status': 'Ok', 'data': graphRes.res}
 
 # Do we need any locks in this code?
 # TBF, I don't remember how python handles parallel code ~SC
@@ -168,8 +161,7 @@ def addEdge(v1: str, v2: str, distance: int):
 	data.edges[v2].insert(graph.Edge(v2, v1, edgeUUID, distance))
 
 	processPassthroughData()
-
-	return {'status':'Ok', 'id': edgeUUID}
+	return {'status': 'Ok', 'id': edgeUUID}
 
 @app.delete("/deleteEdge/{id}/")
 def deleteEdge(id: str):
