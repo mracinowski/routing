@@ -2,17 +2,27 @@ from redis import Redis
 from pydantic import BaseModel
 import logging
 from models import Lease
+from google.cloud import storage
 
-LEASE_DURATION = 5
+BUCKET_NAME = "irio-bucket-2025"
+LEASE_DURATION = 60
 
 log = logging.getLogger("uvicorn")
 
 class Service:
 	def __init__(self):
 		self.__redis = None
-		self.__shards = [ "asmeau", "broegua", "cuswaica" ]
+		self.__shards = []
 
 	def connect(self, host, port):
+		self.__gcs = storage.Client.from_service_account_json("keys.json")
+		groups = self.__gcs.list_blobs(BUCKET_NAME)
+
+		for group in groups:
+			"data_ID.json"
+			if group.name.startswith("data_"):
+				self.__shards.append(group.name[5:-5])
+
 		self.__redis = Redis(
 			host = host,
 			port = port,
@@ -54,6 +64,6 @@ class Service:
 				log.info("Lease {} to {}".format(shard, registration.url))
 				return self.__new_lease(shard)
 
-		log.warn("No lease to {}", registration.url)
+		log.warn("No lease to {}".format(registration.url))
 		return None
 
