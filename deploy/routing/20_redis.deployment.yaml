@@ -32,7 +32,7 @@ spec:
       volumes:
       - name: redis-config
         configMap: 
-          name: my-redis-config
+          name: redis-config
       - name: data
         emptyDir: {}
 status: {}

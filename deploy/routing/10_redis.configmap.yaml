@@ -1,0 +1,7 @@
+apiVersion: v1
+kind: ConfigMap
+data:
+  maxmemory: 2mb
+metadata:
+  name: redis-config
+
