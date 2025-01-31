@@ -194,10 +194,10 @@ def addEdge(v1: str, v2: str, distance: int):
         
         edgeUUID = uuid.uuid4()
         for i in [v1, v2]:
-            if data.externalEdges[i] is None:
+            if i not in data.externalEdges.keys():
                 data.externalEdges[i] = []
             if data.noExternalConnections[i] == 0:
-                pass
+                passToWorkers(data.serverToDcMapping[i], f'/setNodeStatus/{i}/external/')
             data.noExternalConnections[i] += 1
             passToWorkers(data.edgesToDC[i], f'/setNodeStatus/{i}/external/')
 
