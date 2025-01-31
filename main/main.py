@@ -175,7 +175,7 @@ def getDistance(start: str, end: str):
     distance = res.res[end]
     # 4. If it's internal connection, ask also for getInternalConnection between start and end
     if data.serverToDcMapping[start] == data.serverToDcMapping[end]:
-        internal = passToWorkers(data.serverToDcMapping[start], f'/getInternalConnection/{start}/{end}/')['data']
+        internal = passToWorkers(data.serverToDcMapping[start], f'/getInternalConnection/{start}/{end}/')
         distance = min(distance, internal['distance'])
     logger.info("getDistance from {} to {} -> {}".format(start, end, distance))
     return {'status': 'Ok', 'distance': distance}
