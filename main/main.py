@@ -37,15 +37,17 @@ class MainData:
 data = MainData()
 dataFile = "datam.json"
 lockFile = "lockm.lock"
+test = ""
 
 # For non-authoritative workers, check if there is new data present and load
 def refreshData():
     logger.info("refreshData()")
     global data
-    if not fileOperations.checkLock(lockFile, data.dataLock):
+    if fileOperations.checkLock(lockFile, data.dataLock):
         logger.info("refreshData(): nothing to refresh")
         return
     textData = fileOperations.readFile(dataFile)
+    test = textData
     data = jsonpickle.loads(textData)
     logger.info("refreshData(): refreshed")
 
@@ -81,6 +83,14 @@ async def startup():
     logger.info("main connected")
     refreshData()
     logger.info("main startup finished")
+ 
+@app.get("/logs")
+def getLogs():
+    return jsonpickle.encode(data, include_properties=True)
+
+@app.get("/logs2")
+def getLogs2():
+    return test
 
 @app.get("/getRoute/{start}/{end}")
 def getRoute(start: str, end: str):
