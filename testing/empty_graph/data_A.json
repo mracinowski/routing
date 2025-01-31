@@ -1,1 +1,1 @@
-{"py/object": "worker.main.LocalData", "dataLock": "empty", "edges": {"A1": [], "A2": [], "A3": [], "A4": [], "A5": []}, "externalNodes": [], "internalNodes": ["A1", "A2", "A3", "A4", "A5"], "passthroughMatrix": []}
+{"py/object": "worker.main.LocalData", "dataLock": "empty", "edges": {"A1": [], "A2": [], "A3": [], "A4": [], "A5": []}, "externalNodes": [], "internalNodes": ["A1", "A2", "A3", "A4", "A5"], "passthroughMatrix": {}}
