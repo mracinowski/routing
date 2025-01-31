@@ -73,14 +73,14 @@ def ensureFreshWorkerData():
 
 @app.on_event("startup")
 async def startup():
-    logger.info("main startup")
+    logger.info("worker startup")
     workers.connect(
         os.environ['REDIS_SERVICE_HOST'],
         os.environ['REDIS_SERVICE_PORT']
     )
-    logger.info("main connected")
+    logger.info("worker connected")
     refreshData()
-    logger.info("main startup finished")
+    logger.info("worker startup finished")
 
 @app.get("/getRoute/{start}/{end}")
 def getRoute(start: str, end: str):
@@ -178,7 +178,7 @@ def addEdge(v1: str, v2: str, distance: int):
         if isAuthoritative is False:
             # Or alternatively call authoritative worker
             logger.error("addEdge: this node cannot edit data")
-            raise HTTPException(403, "This node cannot edit data")        
+            raise HTTPException(403, "This node cannot edit data")
         
         edgeUUID = uuid.uuid4()
         for i in [v1, v2]:
