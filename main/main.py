@@ -36,7 +36,7 @@ class MainData:
 
 data = MainData()
 dataFile = "datam.json"
-lockFile = "lockm.json"
+lockFile = "lockm.lock"
 
 # For non-authoritative workers, check if there is new data present and load
 def refreshData():

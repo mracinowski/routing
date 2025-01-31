@@ -47,7 +47,7 @@ async def lease():
 	if lease_name is not None:
 		global dataFile, lockFile
 		dataFile = 'data_' + lease_name + '.json'
-		lockFile = 'lock_' + lease_name + '.json'
+		lockFile = 'lock_' + lease_name + '.lock'
 		refreshData()
 
 
