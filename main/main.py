@@ -37,13 +37,16 @@ class MainData:
 data = MainData()
 dataFile = "datam.json"
 lockFile = "lockm.lock"
+test = ""
 
 # For non-authoritative workers, check if there is new data present and load
 def refreshData():
     global data
-    if not fileOperations.checkLock(lockFile, data.dataLock):
+    global test
+    if fileOperations.checkLock(lockFile, data.dataLock):
         return
     textData = fileOperations.readFile(dataFile)
+    test = textData
     data = jsonpickle.loads(textData)
 
 # Save main data into storage
@@ -75,6 +78,14 @@ async def startup():
 		os.environ['REDIS_SERVICE_PORT']
 	)
 	refreshData()
+ 
+@app.get("/logs")
+def getLogs():
+    return jsonpickle.encode(data, include_properties=True)
+
+@app.get("/logs2")
+def getLogs2():
+    return test
 
 @app.get("/getRoute/{start}/{end}")
 def getRoute(start: str, end: str):

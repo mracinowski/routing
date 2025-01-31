@@ -55,7 +55,7 @@ async def lease():
 # If there is update, refresh in memory data
 def refreshData():
 	global data
-	if not fileOperations.checkLock(lockFile, data.dataLock):
+	if fileOperations.checkLock(lockFile, data.dataLock):
 		return
 	textData = fileOperations.readFile(dataFile)
 	data = jsonpickle.loads(textData)
