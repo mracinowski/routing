@@ -3,7 +3,7 @@ import tempfile
 
 
 bucketName = "bucketName"
-storage_client = storage.Client.from_service_account_json("AddAuth.json")
+storage_client = storage.Client.from_service_account_json("keys.json")
 
 # Checks if the lock has changed
 def checkLock(path, lastLock):
