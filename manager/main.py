@@ -1,5 +1,4 @@
-from fastapi import FastAPI, Request
-from pydantic import BaseModel
+from fastapi import FastAPI
 import logging
 import os
 from manager.service import Service
@@ -10,6 +9,7 @@ log = logging.getLogger("uvicorn")
 
 service = Service()
 
+
 @app.on_event("startup")
 async def startup():
 	service.connect(
@@ -17,9 +17,11 @@ async def startup():
 		os.environ['REDIS_SERVICE_PORT']
 	)
 
+
 @app.get("/")
 async def hello():
 	return "Hello world!"
+
 
 @app.post("/lease")
 async def lease(registration: Registration):

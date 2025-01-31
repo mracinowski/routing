@@ -1,13 +1,13 @@
 from google.cloud import storage
-import tempfile
-
 
 bucketName = "irio-bucket-2025"
 storage_client = storage.Client.from_service_account_json("keys.json")
 
+
 # Checks if the lock has changed
-def checkLock(path, lastLock):
-    return readFile(path) == lastLock
+def check_lock(path, last_lock):
+    return read_file(path) == last_lock
+
 
 def download_blob_into_memory(bucket_name, blob_name):
     """Downloads a blob into memory."""
@@ -35,7 +35,6 @@ def download_blob_into_memory(bucket_name, blob_name):
     return contents.decode("utf-8")
 
 
-
 def upload_blob_from_memory(bucket_name, contents, destination_blob_name):
     """Uploads a file to the bucket."""
 
@@ -58,10 +57,9 @@ def upload_blob_from_memory(bucket_name, contents, destination_blob_name):
     )
 
     
-def readFile(path):
+def read_file(path):
     return download_blob_into_memory(bucketName, path)
 
-def saveFile(path, data: str):
-    # with tempfile.NamedTemporaryFile(delete_on_close=False) as fp:
-    #     fp.write(data.encode())
+
+def save_file(path, data: str):
     upload_blob_from_memory(bucketName, str(data).encode(), path)

@@ -4,6 +4,7 @@ import logging
 
 logger = logging.getLogger("uvicorn")
 
+
 class Manager:
 	def __init__(self):
 		self.__client = httpx.AsyncClient()
@@ -39,4 +40,4 @@ class Manager:
 				})
 				break
 			except httpx.ConnectTimeout:
-				logger.info("Retring...")
+				logger.info("Retrying...")
