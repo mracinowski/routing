@@ -6,6 +6,7 @@ import uuid
 import logging
 from main.workers import Workers
 import os
+from urllib.parse import urljoin
 
 app = FastAPI()
 logger = logging.getLogger("uvicorn")
