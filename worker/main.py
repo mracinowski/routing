@@ -65,8 +65,10 @@ def refreshData():
 
 # Save the current state of data to the drive
 def saveData():
-	data.dataLock = uuid.uuid4()
-	textData = jsonpickle.dumps(data, include_properties=True)
+	data.dataLock = str(uuid.uuid4())
+	logger.info(data)
+#  , include_properties=True
+	textData = jsonpickle.dumps(data)
 	logger.info(textData)
 	fileOperations.saveFile(dataFile, textData)
 	fileOperations.saveFile(lockFile, data.dataLock)
@@ -88,7 +90,7 @@ def processPassthroughData():
 
 @app.get("/test")
 def test():
-    return jsonpickle.encode(data, include_properties=True)
+    return jsonpickle.encode(data)
 
 @app.get("/test2")
 def test():

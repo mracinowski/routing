@@ -6,7 +6,6 @@ import uuid
 import logging
 from main.workers import Workers
 import os
-from urllib.parse import urljoin
 
 app = FastAPI()
 logger = logging.getLogger("uvicorn")
@@ -62,7 +61,7 @@ def saveData():
 # Call given worker with given endpoint
 def passToWorkers(dcId, endpoint) -> dict:
     data = workers.request(dcId, endpoint)
-    if data['res'] != 'Ok':
+    if data['status'] != 'Ok':
         raise HTTPException(500, "Internal communication error")
     return data
 
