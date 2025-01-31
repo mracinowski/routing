@@ -15,7 +15,7 @@ spec:
         app: worker
     spec:
       containers:
-      - image: routing:dev
+      - image: europe-central2-docker.pkg.dev/irio-2425-routing/irio-routing/routing
         name: worker
         ports:
         - containerPort: 8000
