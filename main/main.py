@@ -199,7 +199,6 @@ def addEdge(v1: str, v2: str, distance: int):
             if data.noExternalConnections[i] == 0:
                 passToWorkers(data.serverToDcMapping[i], f'/setNodeStatus/{i}/external/')
             data.noExternalConnections[i] += 1
-            passToWorkers(data.edgesToDC[i], f'/setNodeStatus/{i}/external/')
 
         data.externalEdges[v1].append(graph.Edge(v1, v2, edgeUUID, distance))
         data.externalEdges[v2].append(graph.Edge(v2, v1, edgeUUID, distance))

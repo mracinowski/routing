@@ -29,7 +29,7 @@ class LocalData:
 	# Lock of the current state of the data
 	dataLock = ""
 	# Preprocessed data for passthrough
-	passthroughMatrix = []
+	passthroughMatrix = {}
 	# List of internal nodes
 	internalNodes = []
 	# List of external node
@@ -79,13 +79,13 @@ def ensureExistingNode(node: str):
 		raise HTTPException(400, "Invalid node ID")
 
 def processPassthroughData():
-	data.passthroughMatrix = []
+	data.passthroughMatrix = {}
 	for node in data.externalNodes:
 		resultSet = graph.ResultSet1()
 		graph.dijkstra(node, data.edges, resultSet.callback)
 		data.passthroughMatrix[node] = []
 		for node2 in data.externalNodes:
-			data.passthroughMatrix.append(resultSet.res[node2])
+			data.passthroughMatrix[node].append(resultSet.res[node2])
 	saveData()
 
 @app.get("/test")
