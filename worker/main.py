@@ -64,7 +64,7 @@ def refreshData():
 # Save the current state of data to the drive
 def saveData():
 	data.dataLock = uuid.uuid4()
-	textData = jsonpickle.dumps(data)
+	textData = jsonpickle.encode(data, include_properties=True)
 	fileOperations.saveFile(dataFile, textData)
 	fileOperations.saveFile(lockFile, data.dataLock)
 
