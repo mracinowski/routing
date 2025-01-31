@@ -74,6 +74,7 @@ async def startup():
 		os.environ['REDIS_SERVICE_HOST'],
 		os.environ['REDIS_SERVICE_PORT']
 	)
+	refreshData()
 
 @app.get("/getRoute/{start}/{end}")
 def getRoute(start: str, end: str):
