@@ -42,7 +42,7 @@ data = LocalData()
 dataFile = None
 lockFile = None
 
-async def updateData(lease_name):
+def updateData(lease_name):
 	if lease_name is not None:
 		global dataFile, lockFile
 		dataFile = 'data_' + lease_name + '.json'
@@ -66,7 +66,8 @@ def refreshData():
 # Save the current state of data to the drive
 def saveData():
 	data.dataLock = uuid.uuid4()
-	textData = jsonpickle.encode(data, include_properties=True)
+	textData = jsonpickle.dumps(data, include_properties=True)
+	logger.info(textData)
 	fileOperations.saveFile(dataFile, textData)
 	fileOperations.saveFile(lockFile, data.dataLock)
 
