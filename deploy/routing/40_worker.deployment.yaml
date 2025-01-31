@@ -21,7 +21,9 @@ spec:
         - containerPort: 8000
         args: ["worker:app"]
         env:
-        - name: POD_IP
+        - name: POD_HOST
           valueFrom:
             fieldRef:
               fieldPath: status.podIP
+        - name: POD_PORT
+          value: "8000"
