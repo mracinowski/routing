@@ -90,7 +90,7 @@ def getStatus():
 	Get some kind of id of the current state of the network
 	We don't want to send the internal data, if it hasn't changed
 	"""
-	return data.dataLock
+	return {'status' : 'Ok', 'data' : data.dataLock}
 
 @app.get("/getPassthroughData/{lastId}")
 def getPassthroughData(lastId: str):
@@ -101,7 +101,7 @@ def getPassthroughData(lastId: str):
 	This will be calculated once per data update, 
 	and will use preprocessed data to answer this query. 
 	"""
-	res = {}
+	res = {'status': 'Ok'}
 	
 	if lastId == getStatus():
 		res['hasData'] = False
@@ -126,7 +126,7 @@ def getInternalConnection(internalNode1: str, internalNode2: str):
 	graphPath = graph.PathResult(internalNode1, internalNode2)
 	graph.dijkstra(internalNode1, data.edges, graphPath.callback)
 
-	res = {}
+	res = {'status': 'Ok'}
 	res['distance'] = graphPath.dist
 	res['path'] = graphPath.compute()
  
@@ -142,7 +142,7 @@ def getDistancesMatrix(internalNode1: str):
 	graphRes = graph.ResultSet1()
 	graph.dijkstra(internalNode1, data.edges, graphRes.callback)
 	
-	res = {}
+	res = {'status': 'Ok'}
 	res['data'] = graphRes.res
 
 	return res
@@ -164,15 +164,16 @@ def addEdge(v1: str, v2: str, distance: int):
 		ensureExistingNode(i)
 	
 	edgeUUID = uuid.uuid4()
-	if data.edges[v1] is None:
-		data.edges[v1] = []
+	for i in [v1, v2]:
+		if data.edges[i] is None:
+			data.edges[i] = []
 	
 	data.edges[v1].insert(graph.Edge(v1, v2, edgeUUID, distance))
 	data.edges[v2].insert(graph.Edge(v2, v1, edgeUUID, distance))
 	
 	processPassthroughData()
 	
-	return {'status':'Ok'}
+	return {'status':'Ok', 'id': edgeUUID}
 	
 @app.delete("/deleteEdge/{id}/")
 def deleteEdge(id: str):

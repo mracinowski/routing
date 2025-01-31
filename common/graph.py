@@ -42,12 +42,7 @@ class PathResult:
             res.append(self.paths[res[len(res) - 1]])
         return res
 
-# Does a Dijkstra algorithm, starting from starting node, and calls callback on each visited node
-def dijkstra(starting: str, edges: dict[str, list[Edge]], callback: Callable[[str, int, str], bool]):
-    visited = {}
-    queue: PriorityQueue[tuple[int, str, str]] = PriorityQueue()
-    queue.put((0, starting, ""))
-    visited[starting] = 0
+def internalDijkstra(edges: dict[str, list[Edge]], callback: Callable[[str, int, str], bool], visited: dict[str, int], queue: PriorityQueue):
     while queue.qsize() > 0:
         (dist, element, from_) = queue.get()
         if visited[element] < dist:
@@ -59,3 +54,20 @@ def dijkstra(starting: str, edges: dict[str, list[Edge]], callback: Callable[[st
             
             visited[edge.n2] = dist + edge.length
             queue.put((dist + edge.length, edge.n2, element))
+
+def customStartDijkstra(point, starting: list[tuple[str, int]], edges: dict[str, list[Edge]], callback: Callable[[str, int, str], bool]):
+    visited = {}
+    queue: PriorityQueue[tuple[int, str, str]] = PriorityQueue()
+    for i in starting:
+        visited[i[0]] = i[1]
+        queue.put(i[1], i[0], point)
+    return internalDijkstra(edges, callback, visited, queue)    
+
+# Does a Dijkstra algorithm, starting from starting node, and calls callback on each visited node
+def dijkstra(starting: str, edges: dict[str, list[Edge]], callback: Callable[[str, int, str], bool]):
+    visited = {}
+    queue: PriorityQueue[tuple[int, str, str]] = PriorityQueue()
+    queue.put((0, starting, ""))
+    visited[starting] = 0
+    return internalDijkstra(edges, callback, visited, queue)
+    
