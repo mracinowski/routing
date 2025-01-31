@@ -12,6 +12,7 @@ httptools==0.6.4
 httpx==0.28.1
 idna==3.10
 Jinja2==3.1.5
+jsonpickle~=4.0.1
 markdown-it-py==3.0.0
 MarkupSafe==3.0.2
 mdurl==0.1.2
@@ -33,4 +34,4 @@ uvicorn==0.34.0
 uvloop==0.21.0
 watchfiles==1.0.4
 websockets==14.1
-google-cloud-storage==3.0.0 
+google-cloud-storage==3.0.0
