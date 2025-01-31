@@ -1,3 +1,6 @@
+from json import JSONEncoder
+import json
+from types import SimpleNamespace
 from fastapi import FastAPI, HTTPException
 from common import fileOperations, graph
 import uuid
@@ -11,7 +14,7 @@ authoritativeWorkers = [] # IPs of workers that have authority to change given d
 # There can be only one main with authority
 isAuthoritative = True
 
-class MainData:
+class MainData(JSONEncoder):
     # Lock of the current state of the data
     dataLock = ""
 
@@ -30,13 +33,27 @@ class MainData:
     internalPassthrough: dict[str, dict[str, list[graph.Edge]]] = {}
     
 data = MainData()
-    
+dataFile = "/some/path"
+# For non authoritative workers, check if there is new data present and load
 def refreshData():
-    pass
+    if not fileOperations.checkLock("path/To/Lock", data.dataLock):
+        return
+    textData = fileOperations.readFile(dataFile)
+    jsonData = json.loads(textData, object_hook=lambda d: SimpleNamespace(**d))
+    data.dataLock = jsonData.dataLock
+    data.dataCenters = jsonData.dataCenters
+    data.serverToDcMapping = jsonData.serverToDcMapping
+    data.noExternalConnections = jsonData.noExternalConnections
+    data.edgesToDC = jsonData.edgesToDC
+    data.externalEdges = jsonData.externalEdges
+    data.internalPassthrough = jsonData.internalPassthrough
 
+# Save main data into storage
 def saveData():
-    pass
+    textData = MainData.encode(data)
+    fileOperations.saveFile(dataFile, textData)
 
+# Call given worker with given endpoint
 def passToWorkers(dcId, endpoint) -> dict:
     data = {}
     if data['res'] != 'Ok':
@@ -47,6 +64,7 @@ def ensureExistingNode(node):
     if node not in data.serverToDcMapping.keys():
         raise HTTPException(400, "Invalid node ID")
 
+# Ensure main has fresh passthrough data from each worker
 def ensureFreshWorkerData():
     pass
 
@@ -72,7 +90,7 @@ def getRoute(start: str, end: str):
     if data.serverToDcMapping[start] == data.serverToDcMapping[end]:
         internal = passToWorkers(data.serverToDcMapping[start], f'/getInternalConnection/{start}/{end}/')
         if internal['distance'] < distance:
-            return internal
+            return internal 
     # 5. Ask getInternalConnection for each segment
     fullPath = []
     for i in range(1, len(path)):
@@ -146,7 +164,7 @@ def addEdge(v1: str, v2: str, distance: int):
             data.noExternalConnections[i] += 1
             passToWorkers(data.edgesToDC[i], f'/setNodeStatus/{i}/external/')
             
-	
+    
         data.externalEdges[v1].insert(graph.Edge(v1, v2, edgeUUID, distance))
         data.externalEdges[v2].insert(graph.Edge(v2, v1, edgeUUID, distance))
         data.edgesToDC[edgeUUID] = -1
