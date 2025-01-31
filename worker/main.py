@@ -5,6 +5,7 @@ import jsonpickle
 from worker.shard import Shard
 import uuid
 import logging
+import asyncio
 
 shard = Shard(
 	os.environ["POD_HOST"],
@@ -43,7 +44,8 @@ lockFile = None
 
 @app.on_event("startup")
 async def lease():
-	await shard.lease()
+	asyncio.create_task(shard.lease())
+	#await shard.lease()
 	lease_name = shard.lease_name()
 	if lease_name is not None:
 		global dataFile, lockFile
