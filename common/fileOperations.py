@@ -2,8 +2,8 @@ from google.cloud import storage
 import tempfile
 
 
-bucketName = "bucketName"
-storage_client = storage.Client.from_service_account_json("AddAuth.json")
+bucketName = "irio-bucket-2025"
+storage_client = storage.Client.from_service_account_json("keys.json")
 
 # Checks if the lock has changed
 def checkLock(path, lastLock):
