@@ -52,7 +52,7 @@ class Shard:
 			""
 		))
 
-	async def lease(self):
+	async def lease(self, callback):
 		while True:
 			while self.__lease is None:
 				self.__lease = await self.__try_lease()
@@ -62,6 +62,8 @@ class Shard:
 			current = self.__lease.name
 
 			log.info("Acquired lease for {}".format(self.__lease))
+
+			callback(self.__lease.name)
 
 			while self.__lease is not None and self.__lease.name == current:
 				await sleep(self.__lease.duration / 2.0)

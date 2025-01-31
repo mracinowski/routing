@@ -42,17 +42,16 @@ data = LocalData()
 dataFile = None
 lockFile = None
 
-@app.on_event("startup")
-async def lease():
-	asyncio.create_task(shard.lease())
-	#await shard.lease()
-	lease_name = shard.lease_name()
+async def updateData(lease_name):
 	if lease_name is not None:
 		global dataFile, lockFile
 		dataFile = 'data_' + lease_name + '.json'
 		lockFile = 'lock_' + lease_name + '.lock'
 		refreshData()
 
+@app.on_event("startup")
+async def lease():
+	asyncio.create_task(shard.lease(updateData))
 
 # For non-authoritative, check if there is new data stored about the region
 # If there is update, refresh in memory data

@@ -31,7 +31,7 @@ class Workers:
 			raise LookupError()
 
 		log.info("Request {}".format(urljoin(worker, path)))
-		response = httpx.get(urljoin(worker, path))
+		response = httpx.get(urljoin(worker, path), follow_redirects = True)
 		response.raise_for_status()
 
 		return response.json()
