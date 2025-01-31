@@ -120,7 +120,7 @@ def prepareAllEdges(edgeConnection1: dict[str, int], edgeConnection2: dict[str, 
         for server in data.internalPassthrough[dc].keys():
             if server not in allEdges.keys():
                 allEdges[server] = []
-            allEdges[server].append(data.internalPassthrough[dc][server])
+            allEdges[server].extend(data.internalPassthrough[dc][server])
     if point1 not in allEdges.keys():
         allEdges[point1] = []
     for edge in edgeConnection1.keys():
