@@ -141,7 +141,7 @@ def getDistancesMatrix(internalNode1: str):
 # Do we need any locks in this code?
 # TBF, I don't remember how python handles parallel code ~SC
 
-@app.put("/addEdge/{v1}/{v2}/{distance}")
+@app.get("/addEdge/{v1}/{v2}/{distance}")
 def addEdge(v1: str, v2: str, distance: int):
 	"""
 	Adds an edge between v1 and v2 internal nodes with the given distance.
@@ -165,7 +165,7 @@ def addEdge(v1: str, v2: str, distance: int):
 	processPassthroughData()
 	return {'status': 'Ok', 'id': edgeUUID}
 
-@app.delete("/deleteEdge/{id}/")
+@app.get("/deleteEdge/{id}/")
 def deleteEdge(id: str):
 	"""
 	Deletes edge with the given id
@@ -182,7 +182,7 @@ def deleteEdge(id: str):
 
 	return {'status': 'Ok'}
 
-@app.post("/setNodeStatus/{id}/{status}/")
+@app.get("/setNodeStatus/{id}/{status}/")
 def setNodeStatus(id: str, status: str):
 	"""
 	Mark the node as either internal or external

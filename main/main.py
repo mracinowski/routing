@@ -60,7 +60,7 @@ def saveData():
 
 # Call given worker with given endpoint
 def passToWorkers(dcId, endpoint) -> dict:
-    data = {}
+    data = workers.request(dcId, endpoint)
     if data['res'] != 'Ok':
         raise HTTPException(500, "Internal communication error")
     return data
@@ -71,7 +71,7 @@ def ensureExistingNode(node):
 
 # Ensure main has fresh passthrough data from each worker
 def ensureFreshWorkerData():
-    pass
+    refreshData()
 
 @app.on_event("startup")
 async def startup():
@@ -86,7 +86,7 @@ async def startup():
  
 @app.get("/logs")
 def getLogs():
-    return jsonpickle.encode(data, include_properties=True)
+    return jsonpickle.dumps(data, include_properties=True)
 
 @app.get("/logs2")
 def getLogs2():
@@ -154,6 +154,7 @@ def getDistance(start: str, end: str):
     Get the shortest distance between two nodes
     """
     logger.info("getDistance from {} to {}".format(start, end))
+    refreshData()
     # 1. Check correctness of the input
     for i in [start, end]:
         ensureExistingNode(i)
@@ -173,12 +174,13 @@ def getDistance(start: str, end: str):
     logger.info("getDistance from {} to {} -> {}".format(start, end, distance))
     return {'status': 'Ok', 'distance': distance}
 
-@app.put("/addEdge/{v1}/{v2}/{distance}")
+@app.get("/addEdge/{v1}/{v2}/{distance}")
 def addEdge(v1: str, v2: str, distance: int):
     """
     Adds an edge between v1 and v2 internal nodes with the given distance.
     Returns the internal id of the created path
     """
+    refreshData()
     logger.info("addEdge/{}/{}/{}".format(v1, v2, distance))
     res = {'status': 'Ok'}
     for i in [v1, v2]:
@@ -218,12 +220,13 @@ def addEdge(v1: str, v2: str, distance: int):
     # 2a. If internal, call appropriate worker
     # 2b. If external: ...?
     
-@app.delete("/deleteEdge/{id}/")
+@app.get("/deleteEdge/{id}/")
 def deleteEdge(id: str):
     """
     Deletes edge with the given id
     """
     logger.info("deleteEdge/{}".format(id))
+    refreshData()
     if id not in data.edgesToDC.keys():
         raise HTTPException(400, "Invalid edge ID")
     
