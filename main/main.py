@@ -119,7 +119,7 @@ def getRoute(start: str, end: str):
     fullPath = []
     for i in range(1, len(path)):
         if data.serverToDcMapping[path[i-1]] == data.serverToDcMapping[path[i]]:
-            part: list = passToWorkers(data.serverToDcMapping[path[i]], f'/getInternalConnection/{[path[i-1]]}/{path[i]}/')['path']
+            part: list = passToWorkers(data.serverToDcMapping[path[i]], f'/getInternalConnection/{path[i-1]}/{path[i]}/')['path']
             for element in part:
                 fullPath.append(element)
             fullPath.pop()
