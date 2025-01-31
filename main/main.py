@@ -1,6 +1,4 @@
-from json import JSONEncoder
-import json
-from types import SimpleNamespace
+import jsonpickle
 from fastapi import FastAPI, HTTPException
 from common import fileOperations, graph
 from redis import Redis
@@ -17,7 +15,7 @@ workers = Workers()
 # There can be only one main with authority
 isAuthoritative = True
 
-class MainData(JSONEncoder):
+class MainData:
     # Lock of the current state of the data
     dataLock = ""
 
@@ -34,29 +32,24 @@ class MainData(JSONEncoder):
     
     # Maps each datacenter into it's passthrough connections
     internalPassthrough: dict[str, dict[str, list[graph.Edge]]] = {}
-    
+
+
 data = MainData()
 dataFile = "datam.json"
 lockFile = "lockm.json"
 
 # For non-authoritative workers, check if there is new data present and load
 def refreshData():
+    global data
     if not fileOperations.checkLock(lockFile, data.dataLock):
         return
     textData = fileOperations.readFile(dataFile)
-    jsonData = json.loads(textData, object_hook=lambda d: SimpleNamespace(**d))
-    data.dataLock = jsonData.dataLock
-    data.dataCenters = jsonData.dataCenters
-    data.serverToDcMapping = jsonData.serverToDcMapping
-    data.noExternalConnections = jsonData.noExternalConnections
-    data.edgesToDC = jsonData.edgesToDC
-    data.externalEdges = jsonData.externalEdges
-    data.internalPassthrough = jsonData.internalPassthrough
+    data = jsonpickle.loads(textData)
 
 # Save main data into storage
 def saveData():
     data.dataLock = uuid.uuid4()
-    textData = MainData.encode(data)
+    textData = jsonpickle.encode(data)
     fileOperations.saveFile(dataFile, textData)
     fileOperations.saveFile(lockFile, data.dataLock)
 

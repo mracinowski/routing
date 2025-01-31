@@ -1,9 +1,7 @@
 import os
 from common import fileOperations, graph
 from fastapi import FastAPI, HTTPException
-from json import JSONEncoder
-from types import SimpleNamespace
-import json
+import jsonpickle
 from worker.shard import Shard
 import uuid
 import logging
@@ -24,7 +22,8 @@ datacenterId = 0
 # There can be only one worker with authority over each datacenter
 isAuthoritative = True
 
-class LocalData(JSONEncoder):
+
+class LocalData:
 	# Lock of the current state of the data
 	dataLock = ""
 	# Preprocessed data for passthrough
@@ -55,21 +54,17 @@ async def lease():
 # For non-authoritative, check if there is new data stored about the region
 # If there is update, refresh in memory data
 def refreshData():
+	global data
 	if not fileOperations.checkLock(lockFile, data.dataLock):
 		return
 	textData = fileOperations.readFile(dataFile)
-	jsonData = json.loads(textData, object_hook=lambda d: SimpleNamespace(**d))
-	data.dataLock = jsonData.dataLock
-	data.passthroughMatrix = jsonData.passthroughMatrix
-	data.internalNodes = jsonData.internalNodes
-	data.externalNodes = jsonData.externalNodes
-	data.edges = jsonData.edges
+	data = jsonpickle.loads(textData)
 
 
 # Save the current state of data to the drive
 def saveData():
 	data.dataLock = uuid.uuid4()
-	textData = json.dumps(data)
+	textData = jsonpickle.dumps(data)
 	fileOperations.saveFile(dataFile, textData)
 	fileOperations.saveFile(lockFile, data.dataLock)
 
