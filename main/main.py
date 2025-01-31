@@ -1,11 +1,14 @@
 from fastapi import FastAPI, HTTPException
 from common import fileOperations, graph
+from redis import Redis
 import uuid
+import logging
+from main.workers import Workers
+import os
 
 app = FastAPI()
-
-workerNodes = [] # IPs of workers / load balancers for each datacenter
-authoritativeWorkers = [] # IPs of workers that have authority to change given data segment
+log = logging.getLogger("uvicorn")
+workers = Workers()
 
 # Does this main have authority to update the graph data for the global data
 # There can be only one main with authority
@@ -49,6 +52,13 @@ def ensureExistingNode(node):
 
 def ensureFreshWorkerData():
     pass
+
+@app.on_event("startup")
+async def startup():
+	workers.connect(
+		os.environ['REDIS_SERVICE_HOST'],
+		os.environ['REDIS_SERVICE_PORT']
+	)
 
 @app.get("/getRoute/{start}/{end}")
 def getRoute(start: str, end: str):
