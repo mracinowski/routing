@@ -1,6 +1,9 @@
 from collections.abc import Callable
 from queue import PriorityQueue
 
+import logging
+logger = logging.getLogger("uvicorn")
+
 class Edge:
     n1: str
     n2: str
@@ -31,6 +34,7 @@ class PathResult:
         self.dist = None
 
     def callback(self, node: str, dist: int, from_: str):
+        logger.info(f"Visiting {node} from, {from_}")
         self.paths[node] = from_
         if self.target == node:
             self.dist = dist
