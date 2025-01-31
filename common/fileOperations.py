@@ -2,7 +2,7 @@ from google.cloud import storage
 import tempfile
 
 
-bucketName = "bucketName"
+bucketName = "irio-bucket-2025"
 storage_client = storage.Client.from_service_account_json("keys.json")
 
 # Checks if the lock has changed
