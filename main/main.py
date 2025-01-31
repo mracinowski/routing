@@ -73,14 +73,14 @@ def ensureFreshWorkerData():
 
 @app.on_event("startup")
 async def startup():
-    logger.info("worker startup")
+    logger.info("main startup")
     workers.connect(
         os.environ['REDIS_SERVICE_HOST'],
         os.environ['REDIS_SERVICE_PORT']
     )
-    logger.info("worker connected")
+    logger.info("main connected")
     refreshData()
-    logger.info("worker startup finished")
+    logger.info("main startup finished")
 
 @app.get("/getRoute/{start}/{end}")
 def getRoute(start: str, end: str):
