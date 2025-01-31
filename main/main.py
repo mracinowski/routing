@@ -27,7 +27,7 @@ class MainData(JSONEncoder):
     serverToDcMapping = {}
     # Count a number of external connections each server has
     noExternalConnections = {}
-    # Map each edge id to it's datacenter. -1 if external
+    # Map each edge id to its datacenter. -1 if external
     edgesToDC = {}
     
     externalEdges: dict[str, list[graph.Edge]] = {}
@@ -36,10 +36,12 @@ class MainData(JSONEncoder):
     internalPassthrough: dict[str, dict[str, list[graph.Edge]]] = {}
     
 data = MainData()
-dataFile = "/some/path"
-# For non authoritative workers, check if there is new data present and load
+dataFile = "datam.json"
+lockFile = "lockm.json"
+
+# For non-authoritative workers, check if there is new data present and load
 def refreshData():
-    if not fileOperations.checkLock("path/To/Lock", data.dataLock):
+    if not fileOperations.checkLock(lockFile, data.dataLock):
         return
     textData = fileOperations.readFile(dataFile)
     jsonData = json.loads(textData, object_hook=lambda d: SimpleNamespace(**d))
@@ -53,8 +55,10 @@ def refreshData():
 
 # Save main data into storage
 def saveData():
+    data.dataLock = uuid.uuid4()
     textData = MainData.encode(data)
     fileOperations.saveFile(dataFile, textData)
+    fileOperations.saveFile(lockFile, data.dataLock)
 
 # Call given worker with given endpoint
 def passToWorkers(dcId, endpoint) -> dict:
@@ -161,7 +165,7 @@ def addEdge(v1: str, v2: str, distance: int):
         ensureExistingNode(i)
         
     if data.serverToDcMapping[v1] != data.serverToDcMapping[v2]:
-        if isAuthoritative == False:
+        if isAuthoritative is False:
             # Or alternatively call authoritative worker
             raise HTTPException(403, "This node cannot edit data")        
         
@@ -173,10 +177,9 @@ def addEdge(v1: str, v2: str, distance: int):
                 pass
             data.noExternalConnections[i] += 1
             passToWorkers(data.edgesToDC[i], f'/setNodeStatus/{i}/external/')
-            
-    
-        data.externalEdges[v1].insert(graph.Edge(v1, v2, edgeUUID, distance))
-        data.externalEdges[v2].insert(graph.Edge(v2, v1, edgeUUID, distance))
+
+        data.externalEdges[v1].append(graph.Edge(v1, v2, edgeUUID, distance))
+        data.externalEdges[v2].append(graph.Edge(v2, v1, edgeUUID, distance))
         data.edgesToDC[edgeUUID] = -1
         res['id'] = edgeUUID
     else:
