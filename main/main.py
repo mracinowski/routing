@@ -8,7 +8,7 @@ from main.workers import Workers
 import os
 
 app = FastAPI()
-log = logging.getLogger("uvicorn")
+logger = logging.getLogger("uvicorn")
 workers = Workers()
 
 # Does this main have authority to update the graph data for the global data
@@ -41,13 +41,15 @@ test = ""
 
 # For non-authoritative workers, check if there is new data present and load
 def refreshData():
+    logger.info("refreshData()")
     global data
-    global test
     if fileOperations.checkLock(lockFile, data.dataLock):
+        logger.info("refreshData(): nothing to refresh")
         return
     textData = fileOperations.readFile(dataFile)
     test = textData
     data = jsonpickle.loads(textData)
+    logger.info("refreshData(): refreshed")
 
 # Save main data into storage
 def saveData():
@@ -73,11 +75,14 @@ def ensureFreshWorkerData():
 
 @app.on_event("startup")
 async def startup():
-	workers.connect(
-		os.environ['REDIS_SERVICE_HOST'],
-		os.environ['REDIS_SERVICE_PORT']
-	)
-	refreshData()
+    logger.info("main startup")
+    workers.connect(
+        os.environ['REDIS_SERVICE_HOST'],
+        os.environ['REDIS_SERVICE_PORT']
+    )
+    logger.info("main connected")
+    refreshData()
+    logger.info("main startup finished")
  
 @app.get("/logs")
 def getLogs():
@@ -126,6 +131,7 @@ def getRoute(start: str, end: str):
     return {'status': 'Ok', 'distance': distance, 'path': fullPath}
 
 def prepareAllEdges(edgeConnection1: dict[str, int], edgeConnection2: dict[str, int], point1, point2):
+    logger.info("prepareAllEdges()")
     allEdges: dict[str, list[graph.Edge]] = {}
     for dc in data.internalPassthrough.keys():
         for server in data.internalPassthrough[dc].keys():
@@ -138,7 +144,8 @@ def prepareAllEdges(edgeConnection1: dict[str, int], edgeConnection2: dict[str, 
         allEdges[point1].append(graph.Edge(point1, edge, uuid.uuid4(), edgeConnection1[edge]))
     for edge in edgeConnection2.keys():
         allEdges[edge].append(graph.Edge(edge, point2, uuid.uuid4(), edgeConnection2[edge]))
-    
+
+    logger.info("prepared {}".format(allEdges))
     return allEdges
 
 @app.get("/getDistance/{start}/{end}")
@@ -146,6 +153,7 @@ def getDistance(start: str, end: str):
     """
     Get the shortest distance between two nodes
     """
+    logger.info("getDistance from {} to {}".format(start, end))
     # 1. Check correctness of the input
     for i in [start, end]:
         ensureExistingNode(i)
@@ -162,7 +170,8 @@ def getDistance(start: str, end: str):
     if data.serverToDcMapping[start] == data.serverToDcMapping[end]:
         internal = passToWorkers(data.serverToDcMapping[start], f'/getInternalConnection/{start}/{end}/')['data']
         distance = min(distance, internal['distance'])
-    return {'status':'Ok', 'distance': distance}
+    logger.info("getDistance from {} to {} -> {}".format(start, end, distance))
+    return {'status': 'Ok', 'distance': distance}
 
 @app.put("/addEdge/{v1}/{v2}/{distance}")
 def addEdge(v1: str, v2: str, distance: int):
@@ -170,6 +179,7 @@ def addEdge(v1: str, v2: str, distance: int):
     Adds an edge between v1 and v2 internal nodes with the given distance.
     Returns the internal id of the created path
     """
+    logger.info("addEdge/{}/{}/{}".format(v1, v2, distance))
     res = {'status': 'Ok'}
     for i in [v1, v2]:
         ensureExistingNode(i)
@@ -177,7 +187,8 @@ def addEdge(v1: str, v2: str, distance: int):
     if data.serverToDcMapping[v1] != data.serverToDcMapping[v2]:
         if isAuthoritative is False:
             # Or alternatively call authoritative worker
-            raise HTTPException(403, "This node cannot edit data")        
+            logger.error("addEdge: this node cannot edit data")
+            raise HTTPException(403, "This node cannot edit data")
         
         edgeUUID = uuid.uuid4()
         for i in [v1, v2]:
@@ -201,6 +212,7 @@ def addEdge(v1: str, v2: str, distance: int):
         res['id'] = workerRes['id']
         data.edgesToDC[workerRes['id']] = data.serverToDcMapping[v1]
     saveData()
+    logger.info("addEdge/{}/{}/{} -> {}".format(v1, v2, distance, res))
     return res
     # 1. Check if this is internal of external connection
     # 2a. If internal, call appropriate worker
@@ -211,12 +223,14 @@ def deleteEdge(id: str):
     """
     Deletes edge with the given id
     """
+    logger.info("deleteEdge/{}".format(id))
     if id not in data.edgesToDC.keys():
         raise HTTPException(400, "Invalid edge ID")
     
     if data.edgesToDC[id] == -1:
         if isAuthoritative is False:
             # Or alternatively call authoritative worker
+            logger.error("deleteEdge: this node cannot edit data")
             raise HTTPException(403, "This node cannot edit data")
 
         for key in data.externalEdges.keys():
@@ -227,7 +241,9 @@ def deleteEdge(id: str):
                         passToWorkers(data.edgesToDC[key], f'/setNodeStatus/{key}/internal/')
                     data.externalEdges[key].remove(element)
         saveData()
+        logger.info("deleteEdge: deleted")
     else:
+        logger.info("deleteEdge: pass to workers")
         passToWorkers(data.edgesToDC[id], f'deleteEdge/{id}/')
     # 1. Check if this is internal of external connection
     # 2a. If internal, call appropriate worker
