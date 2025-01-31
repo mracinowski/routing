@@ -67,5 +67,5 @@ def readFile(path):
 
 def saveFile(path, data):
     with tempfile.NamedTemporaryFile(delete_on_close=False) as fp:
-        fp.wite(data)
-        upload_blob(bucketName, fp.name, path )
+        fp.write(data)
+        upload_blob(bucketName, fp.name, path)
