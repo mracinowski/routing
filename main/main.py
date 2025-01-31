@@ -117,9 +117,14 @@ def getRoute(start: str, end: str):
     return {'status': 'Ok', 'distance': distance, 'path': fullPath}
 
 def prepareAllEdges(edgeConnection1: dict[str, int], edgeConnection2: dict[str, int], point1, point2):
-    allEdges: dict[str, list[graph.Edge]]
-    allEdges = data.internalPassthrough.copy()
-    allEdges[point1] = []
+    allEdges: dict[str, list[graph.Edge]] = {}
+    for dc in data.internalPassthrough.keys():
+        for server in data.internalPassthrough[dc].keys():
+            if server not in allEdges.keys():
+                allEdges[server] = []
+            allEdges[server].append(data.internalPassthrough[dc][server])
+    if point1 not in allEdges.keys():
+        allEdges[point1] = []
     for edge in edgeConnection1.keys():
         allEdges[point1].append(graph.Edge(point1, edge, uuid.uuid4(), edgeConnection1[edge]))
     for edge in edgeConnection2.keys():
