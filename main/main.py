@@ -85,15 +85,20 @@ def getDistance(start: str, end: str):
     for i in [start, end]:
         ensureExistingNode(i)
     # 2. Ask getDistancesMatrix for start and end nodes
-    startingPoints = passToWorkers(data.serverToDcMapping[start])['data']
-    endingPoints = passToWorkers(data.serverToDcMapping[start])['data']
+    startingPoints = passToWorkers(data.serverToDcMapping[start], f'/getDistancesMatrix/{start}/')['data']
+    endingPoints = passToWorkers(data.serverToDcMapping[start], f'/getDistancesMatrix/{end}/')['data']
     # 3. Find the data centers through the fastest path goes through
     ensureFreshWorkerData()
     edges = prepareAllEdges(startingPoints, endingPoints, start, end)
-    # 4. Ask getInternalConnection for each segment
-    # 5. If it's internal connection, ask also for getInternalConnection between start and end
-    # 6. Construct answer from the pieces
-    return "Hello world!"
+    res = graph.ResultSet1()
+    graph.dijkstra(start, edges, res.callback)
+    distance = res.res[end]
+    # 4. If it's internal connection, ask also for getInternalConnection between start and end
+    if data.serverToDcMapping[start] == data.serverToDcMapping[end]:
+        internal = passToWorkers(data.serverToDcMapping[start], f'/getInternalConnection/{start}/{end}/')['data']
+        distance = min(distance, internal['distance'])
+    # 5. Construct answer from the pieces
+    return {'status':'Ok', 'distance': distance}
 
 @app.put("/addEdge/{v1}/{v2}/{distance}")
 def addEdge(v1: str, v2: str, distance: int):
@@ -101,7 +106,7 @@ def addEdge(v1: str, v2: str, distance: int):
     Adds an edge between v1 and v2 internal nodes with the given distance.
     Returns the internal id of the created path
     """
-    res = {'status': 'Kk'}
+    res = {'status': 'Ok'}
     for i in [v1, v2]:
         ensureExistingNode(i)
         
