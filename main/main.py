@@ -204,7 +204,7 @@ def deleteEdge(id: str):
         raise HTTPException(400, "Invalid edge ID")
     
     if data.edgesToDC[id] == -1:
-        if isAuthoritative == False:
+        if isAuthoritative is False:
             # Or alternatively call authoritative worker
             raise HTTPException(403, "This node cannot edit data")
 

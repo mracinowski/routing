@@ -60,7 +60,7 @@ def customStartDijkstra(point, starting: list[tuple[str, int]], edges: dict[str,
     queue: PriorityQueue[tuple[int, str, str]] = PriorityQueue()
     for i in starting:
         visited[i[0]] = i[1]
-        queue.put(i[1], i[0], point)
+        queue.put((i[1], i[0], point))
     return internalDijkstra(edges, callback, visited, queue)    
 
 # Does a Dijkstra algorithm, starting from starting node, and calls callback on each visited node
