@@ -38,12 +38,18 @@ class LocalData(JSONEncoder):
 
 
 data = LocalData()
-dataFile = "/some/path"
-lockFile = "path/to/lock"
+dataFile = None
+lockFile = None
 
 @app.on_event("startup")
 async def lease():
 	await shard.lease()
+	lease_name = shard.lease_name()
+	if lease_name is not None:
+		global dataFile, lockFile
+		dataFile = 'data_' + lease_name + '.json'
+		lockFile = 'lock_' + lease_name + '.json'
+		refreshData()
 
 
 # For non-authoritative, check if there is new data stored about the region
