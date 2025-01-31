@@ -1,4 +1,5 @@
 from redis import Redis
+from urllib.parse import urljoin
 import logging
 import httpx
 
@@ -29,7 +30,8 @@ class Workers:
 			log.warn("Redis not ready")
 			raise LookupError()
 
-		response = httpx.post(urljoin(worker, path))
+		log.info("Request {}".format(urljoin(worker, path)))
+		response = httpx.get(urljoin(worker, path))
 		response.raise_for_status()
 
 		return response.json()
