@@ -106,6 +106,7 @@ def getRoute(start: str, end: str):
     # 3. Find the data centers through the fastest path goes through
     ensureFreshWorkerData()
     edges = prepareAllEdges(startingPoints, endingPoints, start, end)
+    logger.warning(jsonpickle.dumps(data))
     res = graph.PathResult(start, end)
     graph.dijkstra(start, edges, res.callback)
     distance = res.dist
@@ -138,6 +139,11 @@ def prepareAllEdges(edgeConnection1: dict[str, int], edgeConnection2: dict[str, 
             if server not in allEdges.keys():
                 allEdges[server] = []
             allEdges[server].extend(data.internalPassthrough[dc][server])
+    for key in data.externalEdges.keys():
+        if key not in allEdges.keys():
+            allEdges[key] = []
+        logger.warning(f"Extending by: {data.externalEdges[key]}")
+        allEdges[server].extend(data.externalEdges[key])
     if point1 not in allEdges.keys():
         allEdges[point1] = []
     for edge in edgeConnection1.keys():
