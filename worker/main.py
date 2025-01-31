@@ -15,6 +15,7 @@ shard = Shard(
 
 app = FastAPI()
 log = logging.getLogger("uvicorn")
+logger = logging.getLogger("uvicorn")
 
 # ID if of the datacenter this worker works on
 datacenterId = 0
@@ -82,6 +83,14 @@ def processPassthroughData():
 		for node2 in data.externalNodes:
 			data.passthroughMatrix.append(resultSet.res[node2])
 	saveData()
+
+@app.get("/test")
+def test():
+    return jsonpickle.encode(data, include_properties=True)
+
+@app.get("/test2")
+def test():
+    return dataFile
 
 @app.get("/getStatus")
 def getStatus():
