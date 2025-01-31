@@ -54,7 +54,7 @@ def refreshData():
 # Save main data into storage
 def saveData():
     data.dataLock = uuid.uuid4()
-    textData = jsonpickle.encode(data, include_properties=True)
+    textData = jsonpickle.encode(data)
     fileOperations.saveFile(dataFile, textData)
     fileOperations.saveFile(lockFile, data.dataLock)
 
