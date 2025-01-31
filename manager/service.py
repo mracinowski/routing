@@ -1,5 +1,4 @@
 from redis import Redis
-from pydantic import BaseModel
 import logging
 from models import Lease
 from google.cloud import storage
@@ -8,6 +7,7 @@ BUCKET_NAME = "irio-bucket-2025"
 LEASE_DURATION = 60
 
 log = logging.getLogger("uvicorn")
+
 
 class Service:
 	def __init__(self):
@@ -24,33 +24,32 @@ class Service:
 				self.__shards.append(group.name[5:-5])
 
 		self.__redis = Redis(
-			host = host,
-			port = port,
-			decode_responses = True
+			host=host,
+			port=port,
+			decode_responses=True
 		)
 
 	def __new_lease(self, shard):
-		return Lease(name = shard, duration = LEASE_DURATION)
+		return Lease(name=shard, duration=LEASE_DURATION)
 
 	def __try_lease(self, shard, lessee):
 		return self.__redis.set(
 			shard,
 			lessee,
-			nx = True,
-			ex = LEASE_DURATION
+			nx=True,
+			ex=LEASE_DURATION
 		)
 
 	def __try_renew(self, shard, lessee):
 		r = self.__redis.getex(
 			shard,
-			ex = LEASE_DURATION
+			ex=LEASE_DURATION
 		)
 		return r == lessee
 
-
 	def lease(self, registration):
 		if self.__redis is None:
-			log.warn("Redis not ready")
+			log.warning("Redis not ready")
 			return None
 
 		if registration.renew is not None:
@@ -64,6 +63,5 @@ class Service:
 				log.info("Lease {} to {}".format(shard, registration.url))
 				return self.__new_lease(shard)
 
-		log.warn("No lease to {}".format(registration.url))
+		log.warning("No lease to {}".format(registration.url))
 		return None
-
