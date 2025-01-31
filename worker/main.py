@@ -5,8 +5,6 @@ from json import JSONEncoder
 from types import SimpleNamespace
 import json
 from worker.shard import Shard
-import httpx
-import asyncio
 import uuid
 import logging
 
@@ -26,7 +24,7 @@ datacenterId = 0
 # There can be only one worker with authority over each datacenter
 isAuthoritative = True
 
-class localData(JSONEncoder):
+class LocalData(JSONEncoder):
 	# Lock of the current state of the data
 	dataLock = ""
 	# Preprocessed data for passthrough
@@ -39,7 +37,7 @@ class localData(JSONEncoder):
 	edges: dict[str, list[graph.Edge]] = {}
 
 
-data = localData()
+data = LocalData()
 dataFile = "/some/path"
 lockFile = "path/to/lock"
 
@@ -64,8 +62,9 @@ def refreshData():
 
 # Save the current state of data to the drive
 def saveData():
-	textData = localData.encode(data)
+	textData = json.dumps(data)
 	fileOperations.saveFile(dataFile, textData)
+	fileOperations.saveFile(lockFile, data.dataLock)
 
 
 def ensureExistingNode(node: str):
@@ -80,6 +79,8 @@ def processPassthroughData():
 		data.passthroughMatrix[node] = []
 		for node2 in data.externalNodes:
 			data.passthroughMatrix.append(resultSet.res[node2])
+	data.dataLock = uuid.uuid4()
+	saveData()
 
 @app.get("/getStatus")
 def getStatus():
@@ -157,8 +158,8 @@ def addEdge(v1: str, v2: str, distance: int):
 		if data.edges[i] is None:
 			data.edges[i] = []
 
-	data.edges[v1].insert(graph.Edge(v1, v2, edgeUUID, distance))
-	data.edges[v2].insert(graph.Edge(v2, v1, edgeUUID, distance))
+	data.edges[v1].append(graph.Edge(v1, v2, edgeUUID, distance))
+	data.edges[v2].append(graph.Edge(v2, v1, edgeUUID, distance))
 
 	processPassthroughData()
 	return {'status': 'Ok', 'id': edgeUUID}
