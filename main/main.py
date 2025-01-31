@@ -101,8 +101,8 @@ def getRoute(start: str, end: str):
     for i in [start, end]:
         ensureExistingNode(i)
     # 2. Ask getDistancesMatrix for start and end nodes
-    startingPoints = passToWorkers(data.serverToDcMapping[start], f'/getDistancesMatrix/{start}/')['data']
-    endingPoints = passToWorkers(data.serverToDcMapping[start], f'/getDistancesMatrix/{end}/')['data']
+    startingPoints = passToWorkers(data.serverToDcMapping[start], f'/getDistancesMatrix/{start}')['data']
+    endingPoints = passToWorkers(data.serverToDcMapping[end], f'/getDistancesMatrix/{end}')['data']
     # 3. Find the data centers through the fastest path goes through
     ensureFreshWorkerData()
     edges = prepareAllEdges(startingPoints, endingPoints, start, end)
@@ -160,7 +160,7 @@ def getDistance(start: str, end: str):
         ensureExistingNode(i)
     # 2. Ask getDistancesMatrix for start and end nodes
     startingPoints = passToWorkers(data.serverToDcMapping[start], f'/getDistancesMatrix/{start}/')['data']
-    endingPoints = passToWorkers(data.serverToDcMapping[start], f'/getDistancesMatrix/{end}/')['data']
+    endingPoints = passToWorkers(data.serverToDcMapping[end], f'/getDistancesMatrix/{end}/')['data']
     # 3. Find the data centers through the fastest path goes through
     ensureFreshWorkerData()
     edges = prepareAllEdges(startingPoints, endingPoints, start, end)
