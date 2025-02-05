@@ -76,7 +76,15 @@ def ensure_existing_node(node):
 
 # Ensure main has fresh passthrough data from each worker
 def ensure_fresh_worker_data():
-    refresh_data()
+    pass
+    # global data
+    # for i in data.dataCenters:
+    #     data = pass_to_workers(i, 'getPassthroughData/XD/')['data']
+    #     for i in len(data['nodes']):
+    #         for j in len(data['nodes']):
+    #             a = data['nodes'][i]
+    #             b = data['nodes'][j]
+    #             len = data['matrix'][i][j]
 
 
 @app.on_event("startup")
@@ -143,7 +151,7 @@ def get_route(start: str, end: str):
 
 
 def prepare_all_edges(edge_connection1: dict[str, int], edge_connection2: dict[str, int], point1, point2):
-    logger.info("prepareAllEdges()")
+    logger.info("prepareAllEdges()XD")
     all_edges: dict[str, list[graph.Edge]] = {}
     for dc in data.internalPassthrough.keys():
         for server in data.internalPassthrough[dc].keys():
@@ -154,7 +162,7 @@ def prepare_all_edges(edge_connection1: dict[str, int], edge_connection2: dict[s
         if key not in all_edges.keys():
             all_edges[key] = []
         logger.warning(f"Extending by: {data.externalEdges[key]}")
-        all_edges[server].extend(data.externalEdges[key])
+        all_edges[key].extend(data.externalEdges[key])
     if point1 not in all_edges.keys():
         all_edges[point1] = []
     for edge in edge_connection1.keys():

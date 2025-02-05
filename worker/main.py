@@ -112,7 +112,7 @@ def get_status():
     return {'status': 'Ok', 'data': data.dataLock}
 
 
-@app.get("/getPassthroughData/{lastId}")
+@app.get("/getPassthroughData/{last_id}")
 def get_passthrough_data(last_id: str):
     """
     Get the data about passthrough through the datacenter in control
@@ -136,7 +136,7 @@ def get_passthrough_data(last_id: str):
     return res
 
 
-@app.get("/getInternalConnection/{internalNode1}/{internalNode2}")
+@app.get("/getInternalConnection/{internal_node1}/{internal_node2}")
 def get_internal_connection(internal_node1: str, internal_node2: str):
     """
     Returns distance and exact path between two internal nodes
@@ -149,7 +149,7 @@ def get_internal_connection(internal_node1: str, internal_node2: str):
     return {'status': 'Ok', 'distance': graph_path.dist, 'path': graph_path.compute()}
 
 
-@app.get("/getDistancesMatrix/{internalNode1}")
+@app.get("/getDistancesMatrix/{internal_node1}")
 def get_distances_matrix(internal_node1: str):
     """
     Returns distance from the internal node to all external connections.
@@ -191,7 +191,7 @@ def add_edge(v1: str, v2: str, distance: int):
     return {'status': 'Ok', 'id': edge_uuid}
 
 
-@app.get("/deleteEdge/{id}/")
+@app.get("/deleteEdge/{edge_id}/")
 def delete_edge(edge_id: str):
     """
     Deletes edge with the given id
@@ -209,7 +209,7 @@ def delete_edge(edge_id: str):
     return {'status': 'Ok'}
 
 
-@app.get("/setNodeStatus/{id}/{status}/")
+@app.get("/setNodeStatus/{node_id}/{status}/")
 def set_node_status(node_id: str, status: str):
     """
     Mark the node as either internal or external
