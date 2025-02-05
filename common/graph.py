@@ -43,20 +43,26 @@ class PathResult:
             self.dist = dist
 
     def compute(self):
-        res = [self.target]
-        while res[len(res) - 1] != self.source:
-            res.append(self.paths[res[len(res) - 1]])
-        return res
+        try:
+            res = [self.target]
+            while res[len(res) - 1] != self.source:
+                res.append(self.paths[res[len(res) - 1]])
+            res.reverse()
+            return res
+        except:
+            return "Not path was found"
 
 
 def internal_dijkstra(edges: dict[str, list[Edge]], callback: Callable[[str, int, str], bool],
                       visited: dict[str, int], queue: PriorityQueue):
+    logger.info(f"Visited {visited}")
     while queue.qsize() > 0:
         (dist, element, from_) = queue.get()
         if visited[element] < dist:
             continue
         callback(element, dist, from_)
         for edge in edges[element]:
+            logger.info(f"Checking {edge.n2} from, {from_}")
             if edge.n2 in visited.keys() and visited[edge.n2] <= dist + edge.length:
                 continue
 

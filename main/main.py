@@ -77,14 +77,18 @@ def ensure_existing_node(node):
 # Ensure main has fresh passthrough data from each worker
 def ensure_fresh_worker_data():
     pass
-    # global data
-    # for i in data.dataCenters:
-    #     data = pass_to_workers(i, 'getPassthroughData/XD/')['data']
-    #     for i in len(data['nodes']):
-    #         for j in len(data['nodes']):
-    #             a = data['nodes'][i]
-    #             b = data['nodes'][j]
-    #             len = data['matrix'][i][j]
+    global data
+    for dc in data.dataCenters:
+        data2 = pass_to_workers(dc, 'getPassthroughData/XD/')['data']
+        logger.info(data2)
+        for i in range(len(data2['nodes'])):
+            a = data2['nodes'][i]
+            data.internalPassthrough[dc][a] = []
+            for j in range(len(data2['nodes'])):
+                b = data2['nodes'][j]
+                lent = data2['matrix'][a][j]
+                data.internalPassthrough[dc][a].append(graph.Edge(a, b, uuid.uuid4(), lent))
+                
 
 
 @app.on_event("startup")
@@ -123,7 +127,6 @@ def get_route(start: str, end: str):
     # 3. Find the data centers through the fastest path goes through
     ensure_fresh_worker_data()
     edges = prepare_all_edges(starting_points, ending_points, start, end)
-    logger.warning(jsonpickle.dumps(data))
     res = graph.PathResult(start, end)
     graph.dijkstra(start, edges, res.callback)
     distance = res.dist
@@ -151,7 +154,7 @@ def get_route(start: str, end: str):
 
 
 def prepare_all_edges(edge_connection1: dict[str, int], edge_connection2: dict[str, int], point1, point2):
-    logger.info("prepareAllEdges()XD")
+    logger.info("prepareAllEdges()")
     all_edges: dict[str, list[graph.Edge]] = {}
     for dc in data.internalPassthrough.keys():
         for server in data.internalPassthrough[dc].keys():
@@ -170,7 +173,6 @@ def prepare_all_edges(edge_connection1: dict[str, int], edge_connection2: dict[s
     for edge in edge_connection2.keys():
         all_edges[edge].append(graph.Edge(edge, point2, uuid.uuid4(), edge_connection2[edge]))
 
-    logger.info("prepared {}".format(all_edges))
     return all_edges
 
 
