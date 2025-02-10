@@ -27,6 +27,7 @@ class ResultSet1:
         self.res = {}
 
     def callback(self, node: str, dist: int, _from: str):
+        """Updates node's info about its distance from source"""
         self.res[node] = dist
 
 
@@ -40,6 +41,7 @@ class PathResult:
         self.dist = None
 
     def callback(self, node: str, dist: int, from_: str):
+        """Updates node's info about its predecessor on path"""
         logger.info(f"Visiting {node} from, {from_}")
         self.paths[node] = from_
         if self.target == node:
@@ -54,7 +56,7 @@ class PathResult:
             res.reverse()
             return res
         except:
-            return "Not path was found"
+            return "No path was found"  # nodes are not connected
 
 
 def internal_dijkstra(edges: dict[str, list[Edge]], callback: Callable[[str, int, str], bool],
@@ -65,7 +67,7 @@ def internal_dijkstra(edges: dict[str, list[Edge]], callback: Callable[[str, int
         (dist, element, from_) = queue.get()
         if visited[element] < dist:
             continue
-        callback(element, dist, from_)
+        callback(element, dist, from_)  # Lets node (element) update its info.
         for edge in edges[element]:
             logger.info(f"Checking {edge.n2} from {from_}")
             if edge.n2 in visited.keys() and visited[edge.n2] <= dist + edge.length:
