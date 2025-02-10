@@ -75,16 +75,6 @@ def internal_dijkstra(edges: dict[str, list[Edge]], callback: Callable[[str, int
             queue.put((dist + edge.length, edge.n2, element))
 
 
-def custom_start_dijkstra(point, starting: list[tuple[str, int]], edges: dict[str, list[Edge]],
-                          callback: Callable[[str, int, str], bool]):
-    visited = {}
-    queue: PriorityQueue[tuple[int, str, str]] = PriorityQueue()
-    for i in starting:
-        visited[i[0]] = i[1]
-        queue.put((i[1], i[0], point))
-    return internal_dijkstra(edges, callback, visited, queue)
-
-
 def dijkstra(starting: str, edges: dict[str, list[Edge]], callback: Callable[[str, int, str], bool]):
     """Prepares environment to perform Dijkstra algorithm."""
     visited = {}
