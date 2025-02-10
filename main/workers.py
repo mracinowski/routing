@@ -25,6 +25,7 @@ class Workers:
 		return self.__redis.get(w_id)
 
 	def request(self, w_id, path):
+		"""Sends request to worker of a given id on a given endpoint (path)."""
 		worker = self.get(w_id)
 
 		if worker is None:

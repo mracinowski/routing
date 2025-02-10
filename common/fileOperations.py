@@ -4,19 +4,13 @@ bucketName = "irio-bucket-2025"
 storage_client = storage.Client.from_service_account_json("keys.json")
 
 
-# Checks if the lock has changed
 def check_lock(path, last_lock):
+    """Checks if the lock (state of file) has changed."""
     return read_file(path) == last_lock
 
 
 def download_blob_into_memory(bucket_name, blob_name):
     """Downloads a blob into memory."""
-    # The ID of your GCS bucket
-    # bucket_name = "your-bucket-name"
-
-    # The ID of your GCS object
-    # blob_name = "storage-object-name"
-
     bucket = storage_client.bucket(bucket_name)
 
     # Construct a client side representation of a blob.
@@ -37,16 +31,6 @@ def download_blob_into_memory(bucket_name, blob_name):
 
 def upload_blob_from_memory(bucket_name, contents, destination_blob_name):
     """Uploads a file to the bucket."""
-
-    # The ID of your GCS bucket
-    # bucket_name = "your-bucket-name"
-
-    # The contents to upload to the file
-    # contents = "these are my contents"
-
-    # The ID of your GCS object
-    # destination_blob_name = "storage-object-name"
-
     bucket = storage_client.bucket(bucket_name)
     blob = bucket.blob(destination_blob_name)
 
@@ -58,8 +42,10 @@ def upload_blob_from_memory(bucket_name, contents, destination_blob_name):
 
     
 def read_file(path):
+    """Reads a file from GCS."""
     return download_blob_into_memory(bucketName, path)
 
 
 def save_file(path, data: str):
+    """Saves a file to GCS."""
     upload_blob_from_memory(bucketName, str(data).encode(), path)
