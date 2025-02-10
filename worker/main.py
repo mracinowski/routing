@@ -18,23 +18,23 @@ app = FastAPI()
 log = logging.getLogger("uvicorn")
 logger = logging.getLogger("uvicorn")
 
-# ID if of the datacenter this worker works on
+# ID if of the datacenter this worker works on.
 datacenterId = 0
-# Does this worker have authority to update the graph data for the given datacenter
-# There can be only one worker with authority over each datacenter
+# Does this worker have authority to update the graph data for the given datacenter?
+# There can be only one worker with authority over each datacenter.
 isAuthoritative = True
 
 
 class LocalData:
-    # Lock of the current state of the data
+    # Lock of the current state of the data.
     dataLock = ""
-    # Preprocessed data for passthrough
+    # Preprocessed data for passthrough.
     passthroughMatrix = {}
-    # List of internal nodes
+    # List of internal nodes.
     internalNodes = []
-    # List of external node
+    # List of nodes with external connections.
     externalNodes = []
-    # List of all edges
+    # List of all edges.
     edges: dict[str, list[graph.Edge]] = {}
 
 
@@ -44,6 +44,11 @@ lockFile = None
 
 
 def update_data(lease_name):
+    """
+    After getting a lease for a given datacenter, worker should use
+    its data and lock file - this function updates the names of these files
+    and puts data from them in the worker's memory
+    """
     if lease_name is not None:
         global dataFile, lockFile
         dataFile = 'data_' + lease_name + '.json'
@@ -53,12 +58,15 @@ def update_data(lease_name):
 
 @app.on_event("startup")
 async def lease():
+    """Retrieves information about which datacenter this worker is responsible for."""
     asyncio.create_task(shard.lease(update_data))
 
 
-# For non-authoritative, check if there is new data stored about the region
-# If there is update, refresh in memory data
 def refresh_data():
+    """
+    For non-authoritative or just created, check if there is new data stored
+    about the region. If there is update, refresh in memory data.
+    """
     global data
     if fileOperations.check_lock(lockFile, data.dataLock):
         return
@@ -66,11 +74,10 @@ def refresh_data():
     data = jsonpickle.loads(text_data)
 
 
-# Save the current state of data to the drive
 def save_data():
+    """Save the current state of data to the drive."""
     data.dataLock = str(uuid.uuid4())
     logger.info(data)
-    #  , include_properties=True
     text_data = jsonpickle.dumps(data)
     logger.info(text_data)
     fileOperations.save_file(dataFile, text_data)
@@ -83,6 +90,7 @@ def ensure_existing_node(node: str):
 
 
 def process_passthrough_data():
+    """Updates info about internal connections using Dijkstra's algorithm."""
     data.passthroughMatrix = {}
     for node in data.externalNodes:
         result_set = graph.ResultSet1()
@@ -95,11 +103,13 @@ def process_passthrough_data():
 
 @app.get("/test")
 def test():
+    """Debugging endpoint - returns dump of current data."""
     return jsonpickle.encode(data)
 
 
 @app.get("/test2")
 def test():
+    """Debugging endpoint - returns name of file with data."""
     return dataFile
 
 
@@ -117,8 +127,8 @@ def get_passthrough_data(last_id: str):
     """
     Get the data about passthrough through the datacenter in control
     If the state didn't change since last request, based on the provided id,
-    It doesn't send the data, and returns appropriate message
-    This will be calculated once per data update,
+    it doesn't send the data, and returns appropriate message
+    This will be calculated once per data update
     and will use preprocessed data to answer this query.
     """
     res = {'status': 'Ok'}
@@ -138,9 +148,7 @@ def get_passthrough_data(last_id: str):
 
 @app.get("/getInternalConnection/{internal_node1}/{internal_node2}")
 def get_internal_connection(internal_node1: str, internal_node2: str):
-    """
-    Returns distance and exact path between two internal nodes
-    """
+    """Returns distance and exact path between two internal nodes."""
     ensure_existing_node(internal_node1)
     ensure_existing_node(internal_node2)
 
@@ -151,9 +159,7 @@ def get_internal_connection(internal_node1: str, internal_node2: str):
 
 @app.get("/getDistancesMatrix/{internal_node1}")
 def get_distances_matrix(internal_node1: str):
-    """
-    Returns distance from the internal node to all external connections.
-    """
+    """Returns distance from the internal node to all external connections."""
     ensure_existing_node(internal_node1)
 
     graph_res = graph.ResultSet1()
@@ -162,15 +168,11 @@ def get_distances_matrix(internal_node1: str):
     return {'status': 'Ok', 'data': graph_res.res}
 
 
-# Do we need any locks in this code?
-# TBF, I don't remember how python handles parallel code ~SC
-
-
 @app.get("/addEdge/{v1}/{v2}/{distance}")
 def add_edge(v1: str, v2: str, distance: int):
     """
-    Adds an edge between v1 and v2 internal nodes with the given distance.
-    Returns the internal id of the created path
+    Add an edge between v1 and v2 internal nodes with the given distance.
+    Returns the internal id of the created path.
     """
     if not isAuthoritative:
         raise HTTPException(403, "This node cannot edit data")
@@ -193,9 +195,7 @@ def add_edge(v1: str, v2: str, distance: int):
 
 @app.get("/deleteEdge/{edge_id}/")
 def delete_edge(edge_id: str):
-    """
-    Deletes edge with the given id
-    """
+    """Delete edge with the given id."""
     if not isAuthoritative:
         raise HTTPException(403, "This node cannot edit data")
 
@@ -211,9 +211,7 @@ def delete_edge(edge_id: str):
 
 @app.get("/setNodeStatus/{node_id}/{status}/")
 def set_node_status(node_id: str, status: str):
-    """
-    Mark the node as either internal or external
-    """
+    """Mark the node as either internal or external."""
     if not isAuthoritative:
         raise HTTPException(403, "This node cannot edit data")
 
