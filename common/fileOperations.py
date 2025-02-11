@@ -25,7 +25,7 @@ def download_blob_into_memory(bucket_name, blob_name):
             blob_name, bucket_name, contents.decode("utf-8")
         )
     )
-    
+
     return contents.decode("utf-8")
 
 
@@ -40,7 +40,7 @@ def upload_blob_from_memory(bucket_name, contents, destination_blob_name):
         f"{destination_blob_name} with contents {contents} uploaded to {bucket_name}."
     )
 
-    
+
 def read_file(path):
     """Reads a file from GCS."""
     return download_blob_into_memory(bucketName, path)

@@ -59,8 +59,12 @@ class PathResult:
             return "No path was found"  # nodes are not connected
 
 
-def internal_dijkstra(edges: dict[str, list[Edge]], callback: Callable[[str, int, str], bool],
-                      visited: dict[str, int], queue: PriorityQueue):
+def internal_dijkstra(
+    edges: dict[str, list[Edge]],
+    callback: Callable[[str, int, str], bool],
+    visited: dict[str, int],
+    queue: PriorityQueue,
+):
     """Does a Dijkstra algorithm, starting from starting node, and calls callback on each visited node."""
     logger.info(f"Visited {visited}")
     while queue.qsize() > 0:
@@ -77,7 +81,11 @@ def internal_dijkstra(edges: dict[str, list[Edge]], callback: Callable[[str, int
             queue.put((dist + edge.length, edge.n2, element))
 
 
-def dijkstra(starting: str, edges: dict[str, list[Edge]], callback: Callable[[str, int, str], bool]):
+def dijkstra(
+    starting: str,
+    edges: dict[str, list[Edge]],
+    callback: Callable[[str, int, str], bool],
+):
     """Prepares environment to perform Dijkstra algorithm."""
     visited = {}
     queue: PriorityQueue[tuple[int, str, str]] = PriorityQueue()

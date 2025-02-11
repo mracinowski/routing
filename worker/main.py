@@ -51,8 +51,8 @@ def update_data(lease_name):
     """
     if lease_name is not None:
         global dataFile, lockFile
-        dataFile = 'data_' + lease_name + '.json'
-        lockFile = 'lock_' + lease_name + '.lock'
+        dataFile = "data_" + lease_name + ".json"
+        lockFile = "lock_" + lease_name + ".lock"
         refresh_data()
 
 
@@ -119,7 +119,7 @@ def get_status():
     Get some kind of id of the current state of the network
     We don't want to send the internal data, if it hasn't changed
     """
-    return {'status': 'Ok', 'data': data.dataLock}
+    return {"status": "Ok", "data": data.dataLock}
 
 
 @app.get("/getPassthroughData/{last_id}")
@@ -131,18 +131,18 @@ def get_passthrough_data(last_id: str):
     This will be calculated once per data update
     and will use preprocessed data to answer this query.
     """
-    res = {'status': 'Ok'}
+    res = {"status": "Ok"}
 
     if last_id == get_status():
-        res['hasData'] = False
+        res["hasData"] = False
         return res
 
-    res['hasData'] = True
-    res['lock'] = get_status()
-    res['data'] = {}
-    res['data']['matrix'] = data.passthroughMatrix
+    res["hasData"] = True
+    res["lock"] = get_status()
+    res["data"] = {}
+    res["data"]["matrix"] = data.passthroughMatrix
     # List of nodes in the same order as in the matrix
-    res['data']['nodes'] = data.externalNodes
+    res["data"]["nodes"] = data.externalNodes
     return res
 
 
@@ -154,7 +154,7 @@ def get_internal_connection(internal_node1: str, internal_node2: str):
 
     graph_path = graph.PathResult(internal_node1, internal_node2)
     graph.dijkstra(internal_node1, data.edges, graph_path.callback)
-    return {'status': 'Ok', 'distance': graph_path.dist, 'path': graph_path.compute()}
+    return {"status": "Ok", "distance": graph_path.dist, "path": graph_path.compute()}
 
 
 @app.get("/getDistancesMatrix/{internal_node1}")
@@ -165,7 +165,7 @@ def get_distances_matrix(internal_node1: str):
     graph_res = graph.ResultSet1()
     graph.dijkstra(internal_node1, data.edges, graph_res.callback)
 
-    return {'status': 'Ok', 'data': graph_res.res}
+    return {"status": "Ok", "data": graph_res.res}
 
 
 @app.get("/addEdge/{v1}/{v2}/{distance}")
@@ -190,7 +190,7 @@ def add_edge(v1: str, v2: str, distance: int):
     data.edges[v2].append(graph.Edge(v2, v1, edge_uuid, distance))
 
     process_passthrough_data()
-    return {'status': 'Ok', 'id': edge_uuid}
+    return {"status": "Ok", "id": edge_uuid}
 
 
 @app.get("/deleteEdge/{edge_id}/")
@@ -206,7 +206,7 @@ def delete_edge(edge_id: str):
 
     process_passthrough_data()
 
-    return {'status': 'Ok'}
+    return {"status": "Ok"}
 
 
 @app.get("/setNodeStatus/{node_id}/{status}/")
@@ -220,11 +220,14 @@ def set_node_status(node_id: str, status: str):
     elif status == "external":
         new_type = True
     else:
-        raise HTTPException(400, "New status is invalid: expected one of [internal, external]")
+        raise HTTPException(
+            400, "New status is invalid: expected one of [internal, external]"
+        )
 
-    if ((new_type is False and node_id in data.internalNodes) or
-        (new_type is True and node_id in data.externalNodes)):
-        return {'status': 'Ok', 'message': 'No data was changed'}
+    if (new_type is False and node_id in data.internalNodes) or (
+        new_type is True and node_id in data.externalNodes
+    ):
+        return {"status": "Ok", "message": "No data was changed"}
 
     if new_type is False and node_id in data.externalNodes:
         data.externalNodes.remove(node_id)
@@ -236,4 +239,4 @@ def set_node_status(node_id: str, status: str):
         raise HTTPException(400, "Invalid node ID")
 
     process_passthrough_data()
-    return {'status': 'Ok'}
+    return {"status": "Ok"}
