@@ -1,1 +1,1 @@
-from manager.main import app
+from manager.main import app as app
